@@ -1,0 +1,68 @@
+services:
+  client:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dynamic_forms_client
+    image: dynamic-forms-client
+    ports:
+      - "3080:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    env_file:
+      - ./frontend/.env
+    command: ["npm", "run", "dev"]
+    networks:
+      - dynamic-forms
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: dynamic_forms_server
+    image: dynamic-forms-server
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    ports:
+      - "8080:8000"
+    env_file:
+      - ./server/.env
+    volumes:
+      - ./server:/app
+    restart: always
+    environment:
+      - DJANGO_SETTINGS_MODULE=base.settings
+    depends_on:
+      - db
+      - rabbitmq
+    networks:
+      - dynamic-forms
+  db:
+    image: postgres:16-alpine
+    container_name: dynamic-forms-db
+    env_file:
+      - ./server/.env.postgres
+    ports:
+      - "5423:5432"
+    volumes:
+      - dynamicformsdb:/var/lib/postgresql/data
+    networks:
+      - dynamic-forms
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672"   # broker
+      - "15672" # management UI
+    networks:
+      - dynamic-forms
+
+volumes:
+  dynamicformsdb:
+
+networks:
+  dynamic-forms:
+    driver: bridge
