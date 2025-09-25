@@ -1,0 +1,25 @@
+[MASTER]
+load-plugins=pylint_django
+max-line-length = 100
+disable=
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    R0903,  # too-few-public-methods
+    R0901,  # too-many-ancestors
+    E0102,  # function-redefined
+    R0801,  # duplicate-code
+    E1101   # no-member (Django ORM fields)
+ignore-patterns=^tests/.*\.py$
+ignore=migrations,settings.py,wsgi.py,asgi.py,.venv,venv,*/migrations
+
+[MESSAGES CONTROL]
+disable=
+    W0621,  # redefined-outer-name (pytest fixtures)
+    W0223,  # abstract-method
+    W0613,  # unused-argument (DRF views/serializers)
+    W0718,
+    import-outside-toplevel
+
+[TYPECHECK]
+ignored-modules=tests

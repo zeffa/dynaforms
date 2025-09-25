@@ -1,0 +1,28 @@
+[tool.isort]
+profile = "black"  # Ensures compatibility with Black formatter
+line_length = 88  # Matches Black's default
+known_first_party = ["base"]  # Your Django project module
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+skip = [".venv", "venv", "node_modules", "migrations"]  # Skip auto-generated migration files
+
+[tool.black]
+line-length = 88
+skip-string-normalization = false # Quote ormalization
+target-version = ['py312']
+extend-exclude = '''
+(
+  /(\.venv|venv|node_modules)/
+  | migrations
+)
+'''
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203"]
+exclude = [".venv", "venv", "migrations", "*/migrations", "node_modules"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["django-stubs"]
+ignore_missing_imports = true
+exclude = ["migrations", "venv", ".venv", "node_modules"]

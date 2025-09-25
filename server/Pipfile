@@ -1,0 +1,36 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+djangorestframework = "*"
+psycopg2-binary = "*"
+django-cors-headers = "*"
+python-decouple = "==3.8"
+celery = "*"
+drf-nested-routers = "*"
+django-storages = "*"
+phonenumbers = "*"
+django-phonenumber-field = "*"
+djangorestframework-simplejwt = "*"
+drf-spectacular = "*"
+
+[dev-packages]
+pytest-django = "*"
+pytest = "*"
+pytest-cov = ">=4.0"
+isort = "*"
+black = "*"
+flake8 = "*"
+autoflake = "*"
+dill = "*"
+mypy = "*"
+bandit = "*"
+pylint = "*"
+pylint-django = "*"
+django-stubs = {extras = ["plugin"], version = "*"}
+
+[requires]
+python_version = "3.12"
