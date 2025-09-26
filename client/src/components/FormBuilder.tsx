@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormTemplate, FormField, FieldOption } from '../types/form';
+import { ConditionBuilder } from './ConditionBuilder';
 
 const WIDGET_TYPES = [
   { value: 'text', label: 'Text Input' },
@@ -55,6 +56,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ formData, onChange, onSave, l
     const newFields = fields.map((field, i) =>
       i === index ? { ...field, ...updates } : field
     );
+    console.log('newFields', newFields);
     handleFieldsChange(newFields);
   };
 
@@ -428,6 +430,17 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ formData, onChange, onSave, l
                   </div>
                 </div>
               )}
+
+              {/* Conditional Logic */}
+              <div className="mt-4 border-t pt-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Conditional Logic</h4>
+                <p className="text-xs text-gray-500 mb-2">Show/hide this field based on other field values</p>
+                <ConditionBuilder 
+                  field={field} 
+                  allFields={fields} 
+                  onChange={(conditional_logic) => updateField(index, { conditional_logic })}
+                />
+              </div>
 
               {/* Required Checkbox */}
               <div>

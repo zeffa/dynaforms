@@ -25,6 +25,7 @@ class FormFieldSerializer(serializers.ModelSerializer):
             "order",
             "widget_config",
             "validation_rules",
+            "conditional_logic",
             "options",
         ]
 

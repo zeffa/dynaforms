@@ -1,4 +1,15 @@
 // File location: types/form.ts
+export interface Condition {
+  field: string;
+  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains';
+  value: string | number | boolean;
+}
+
+export interface ConditionalLogic {
+  conditions: Condition[];
+  action: 'show' | 'hide';
+}
+
 export interface FieldOption {
   id?: number;
   value: string;
@@ -18,6 +29,7 @@ export interface FormField {
   widget_config: Record<string, any>;
   validation_rules: Record<string, any>;
   options?: FieldOption[];
+  conditional_logic?: ConditionalLogic;
 }
 
 export interface FormTemplate {

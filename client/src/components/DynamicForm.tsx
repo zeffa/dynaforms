@@ -14,6 +14,59 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
 }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [visibleFields, setVisibleFields] = useState<Set<string>>(new Set());
+
+  // Evaluate conditions to determine which fields should be visible
+  const evaluateConditions = (fields: FormFieldType[], currentData: Record<string, any>) => {
+    const visible = new Set<string>();
+    
+    // First, find all fields without conditions (always visible)
+    fields.forEach(field => {
+      if (!field.conditional_logic?.conditions?.length) {
+        visible.add(field.field_name);
+      }
+    });
+    
+    // Then evaluate conditions for fields with conditions
+    fields.forEach(field => {
+      const conditions = field.conditional_logic?.conditions || [];
+      if (conditions.length === 0) return;
+      
+      // For now, we'll use a simple AND condition between all conditions
+      const isVisible = conditions.every(condition => {
+        const fieldValue = currentData[condition.field];
+        
+        switch (condition.operator) {
+          case 'equals':
+            return fieldValue == condition.value;
+          case 'not_equals':
+            return fieldValue != condition.value;
+          case 'contains':
+            return fieldValue != null && String(fieldValue).includes(String(condition.value));
+          case 'greater_than':
+            return Number(fieldValue) > Number(condition.value);
+          case 'less_than':
+            return Number(fieldValue) < Number(condition.value);
+          default:
+            return true;
+        }
+      });
+      
+      if (isVisible) {
+        visible.add(field.field_name);
+      }
+    });
+    
+    return visible;
+  };
+  
+  // Update visible fields when form data changes
+  React.useEffect(() => {
+    console.log('formData', formData);
+    console.log('formTemplate.fields', formTemplate.fields);
+    const newVisibleFields = evaluateConditions(formTemplate.fields, formData);
+    setVisibleFields(newVisibleFields);
+  }, [formData, formTemplate.fields]);
 
   const handleInputChange = (fieldName: string, value: any) => {
     setFormData(prev => ({
@@ -242,7 +295,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {formTemplate.fields.map(field => (
+        {formTemplate.fields
+          .filter(field => visibleFields.has(field.field_name))
+          .map(field => (
           <div key={field.id} className="space-y-2">
             <label htmlFor={field.field_name} className="block text-sm font-semibold text-gray-700">
               {field.label}
