@@ -62,6 +62,62 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ jsonData, onChange, loading }) 
                 </button>
                 {isCheatSheetVisible && (
                     <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-700">
+                        <h3 className="font-bold text-lg mb-4 text-gray-800">Complete Form Template Example</h3>
+                        <pre className="bg-gray-100 p-3 rounded text-xs mb-4 overflow-x-auto"><code>{`{
+  "name": "Sample Form",
+  "description": "A sample form with various field types",
+  "category": "general",
+  "is_active": true,
+  "fields": [
+    {
+      "id": 1,
+      "field_name": "full_name",
+      "label": "Full Name",
+      "widget_type": "text",
+      "placeholder": "Enter your full name",
+      "is_required": true,
+      "order": 1,
+      "widget_config": {
+        "max_length": 100
+      },
+      "validation_rules": {
+        "minLength": 2
+      }
+    },
+    {
+      "id": 2,
+      "field_name": "age",
+      "label": "Age",
+      "widget_type": "number",
+      "is_required": true,
+      "order": 2,
+      "widget_config": {
+        "min_value": 18,
+        "max_value": 120
+      }
+    },
+    {
+      "id": 3,
+      "field_name": "newsletter",
+      "label": "Subscribe to newsletter",
+      "widget_type": "checkbox",
+      "is_required": false,
+      "order": 3,
+      "conditional_logic": {
+        "action": "show",
+        "conditions": [
+          {
+            "field": "age",
+            "operator": "greater_than_or_equals",
+            "value": 18
+          }
+        ]
+      }
+    }
+  ]
+}`}</code></pre>
+
+                        <h3 className="font-bold text-lg mb-3 text-gray-800">Field Configurations</h3>
                         <h4 className="font-bold mb-2">Widget Configurations (widget_config)</h4>
                         <ul className="list-disc list-inside mb-4 pl-4">
                             <li><code>max_length</code>: (number) - For text-based inputs.</li>
@@ -76,9 +132,23 @@ const JSONEditor: React.FC<JSONEditorProps> = ({ jsonData, onChange, loading }) 
                             <li><code>pattern</code>: (string) - For regex validation.</li>
                             <li><code>required</code>: (boolean) - If the field is mandatory.</li>
                         </ul>
+                        <h4 className="font-bold mt-4 mb-2">Conditional Logic (conditional_logic)</h4>
+                        <p className="mb-2">Add show/hide logic to fields based on other field values:</p>
+                        <pre className="bg-gray-100 p-2 rounded text-xs mb-2"><code>{`"conditional_logic": {
+  "action": "show", // or "hide"
+  "conditions": [
+    {
+      "field": "other_field_name",
+      "operator": "equals", // or "not_equals", "greater_than", "less_than", 
+                          // "contains", "not_contains", "greater_than_or_equals",
+                          // "less_than_or_equals", "is_empty", "is_not_empty"
+      "value": "expected_value" // can be string, number, or boolean
+    }
+  ]
+}`}</code></pre>
                         <h4 className="font-bold mt-4 mb-2">Options (for select, radio, checkbox)</h4>
                         <p className="mb-2">The <code>options</code> array should contain objects with the following structure:</p>
-                        <pre className="bg-gray-100 p-2 rounded"><code>{`{
+                        <pre className="bg-gray-100 p-2 rounded text-xs"><code>{`{
   "value": "option1",
   "label": "Option 1",
   "order": 1

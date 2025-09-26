@@ -3,8 +3,8 @@ import { FormField as FormFieldType, FormTemplate } from '@/types/form';
 
 interface DynamicFormProps {
   formTemplate: FormTemplate;
-  onSubmit: (data: Record<string, any>) => void;
   loading?: boolean;
+  onSubmit: (data: Record<string, any>) => void;
 }
 
 const DynamicForm: React.FC<DynamicFormProps> = ({
@@ -16,43 +16,77 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [visibleFields, setVisibleFields] = useState<Set<string>>(new Set());
 
-  // Evaluate conditions to determine which fields should be visible
   const evaluateConditions = (fields: FormFieldType[], currentData: Record<string, any>) => {
     const visible = new Set<string>();
     
-    // First, find all fields without conditions (always visible)
     fields.forEach(field => {
       if (!field.conditional_logic?.conditions?.length) {
         visible.add(field.field_name);
       }
     });
     
-    // Then evaluate conditions for fields with conditions
     fields.forEach(field => {
-      const conditions = field.conditional_logic?.conditions || [];
-      if (conditions.length === 0) return;
+      const conditionalLogic = field.conditional_logic;
+      if (!conditionalLogic?.conditions?.length) return;
       
-      // For now, we'll use a simple AND condition between all conditions
-      const isVisible = conditions.every(condition => {
-        const fieldValue = currentData[condition.field];
+      const conditions = conditionalLogic.conditions;
+      const action = conditionalLogic.action || 'show'; // Default to 'show' if not specified
+      
+      // Evaluate all conditions with AND logic
+      const conditionsMet = conditions.every(condition => {
+        if (!condition.field) return false;
         
+        const fieldValue = currentData[condition.field];
+        const conditionValue = condition.value;
+        
+        // Handle different data types properly
         switch (condition.operator) {
           case 'equals':
-            return fieldValue == condition.value;
+            return fieldValue == conditionValue; // Loose equality to handle string/number cases
+            
           case 'not_equals':
-            return fieldValue != condition.value;
+            return fieldValue != conditionValue;
+            
           case 'contains':
-            return fieldValue != null && String(fieldValue).includes(String(condition.value));
+            return fieldValue != null && String(fieldValue).includes(String(conditionValue));
+            
+          case 'not_contains':
+            return fieldValue != null && !String(fieldValue).includes(String(conditionValue));
+            
           case 'greater_than':
-            return Number(fieldValue) > Number(condition.value);
+            return Number(fieldValue) > Number(conditionValue);
+            
           case 'less_than':
-            return Number(fieldValue) < Number(condition.value);
+            return Number(fieldValue) < Number(conditionValue);
+            
+          case 'greater_than_or_equals':
+            return Number(fieldValue) >= Number(conditionValue);
+            
+          case 'less_than_or_equals':
+            return Number(fieldValue) <= Number(conditionValue);
+            
+          case 'is_empty':
+            return fieldValue === '' || fieldValue == null || fieldValue === false;
+            
+          case 'is_not_empty':
+            return fieldValue !== '' && fieldValue != null && fieldValue !== false;
+            
           default:
+            console.warn(`Unknown operator: ${condition.operator}`);
             return true;
         }
       });
       
-      if (isVisible) {
+      // Apply the action (show/hide) based on whether conditions are met
+      if (conditionsMet) {
+        if (action === 'show') {
+          visible.add(field.field_name);
+        } else {
+          // For 'hide' action, remove from visible set if it was added by default
+          visible.delete(field.field_name);
+        }
+      } else if (action === 'hide') {
+        // If conditions for hiding aren't met, show the field
         visible.add(field.field_name);
       }
     });
@@ -62,10 +96,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   
   // Update visible fields when form data changes
   React.useEffect(() => {
-    console.log('formData', formData);
-    console.log('formTemplate.fields', formTemplate.fields);
-    const newVisibleFields = evaluateConditions(formTemplate.fields, formData);
-    setVisibleFields(newVisibleFields);
+    // Debounce the evaluation to prevent excessive re-renders
+    const timer = setTimeout(() => {
+      const newVisibleFields = evaluateConditions(formTemplate.fields, formData);
+      setVisibleFields(newVisibleFields);
+    }, 50);
+    
+    return () => clearTimeout(timer);
   }, [formData, formTemplate.fields]);
 
   const handleInputChange = (fieldName: string, value: any) => {
@@ -133,18 +170,27 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   };
 
   const renderField = (field: FormFieldType) => {
+    const isVisible = visibleFields.has(field.field_name);
+    const fieldError = errors[field.field_name];
+    
     const commonProps = {
       id: field.field_name,
       name: field.field_name,
       placeholder: field.placeholder,
-      value: formData[field.field_name] || '',
+      value: formData[field.field_name] ?? '',
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        handleInputChange(field.field_name, e.target.value);
+        const value = e.target.type === 'checkbox' 
+          ? (e.target as HTMLInputElement).checked 
+          : e.target.value;
+        handleInputChange(field.field_name, value);
       },
+      disabled: loading,
       className: `w-full p-3 text-gray-700 border rounded-lg ${
-        errors[field.field_name] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-      } focus:ring-2 focus:border-transparent transition-colors`,
-      required: field.is_required
+        fieldError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+      } focus:ring-2 focus:border-transparent transition-colors disabled:opacity-50 disabled:bg-gray-50`,
+      required: field.is_required,
+      'aria-invalid': !!fieldError,
+      'aria-describedby': fieldError ? `${field.field_name}-error` : undefined
     };
 
     switch (field.widget_type) {
@@ -295,26 +341,47 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
-        {formTemplate.fields
-          .filter(field => visibleFields.has(field.field_name))
-          .map(field => (
-          <div key={field.id} className="space-y-2">
-            <label htmlFor={field.field_name} className="block text-sm font-semibold text-gray-700">
-              {field.label}
-              {field.is_required && <span className="text-red-500 ml-1">*</span>}
-            </label>
-            
-            {renderField(field)}
-            
-            {field.help_text && (
-              <p className="text-sm text-gray-500 mt-1">{field.help_text}</p>
-            )}
-            
-            {errors[field.field_name] && (
-              <p className="text-sm text-red-600 mt-1 font-medium">{errors[field.field_name]}</p>
-            )}
-          </div>
-        ))}
+        {formTemplate.fields.map(field => {
+          const isVisible = visibleFields.has(field.field_name);
+          const fieldError = errors[field.field_name];
+          
+          return (
+            <div 
+              key={field.id} 
+              className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                isVisible ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="space-y-2">
+                <label 
+                  htmlFor={field.field_name} 
+                  className={`block text-sm font-semibold ${
+                    fieldError ? 'text-red-700' : 'text-gray-700'
+                  }`}
+                >
+                  {field.label}
+                  {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                
+                {renderField(field)}
+                
+                {field.help_text && (
+                  <p className="text-sm text-gray-500 mt-1">{field.help_text}</p>
+                )}
+                
+                {fieldError && (
+                  <p 
+                    id={`${field.field_name}-error`}
+                    className="text-sm text-red-600 mt-1 font-medium"
+                    role="alert"
+                  >
+                    {fieldError}
+                  </p>
+                )}
+              </div>
+            </div>
+          );
+        })}
         
         <button
           type="submit"
