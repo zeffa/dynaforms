@@ -16,9 +16,7 @@ class FormTemplate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(
-        max_length=100, 
-        blank=True, 
-        help_text="Optional category for organizing forms"
+        max_length=100, blank=True, help_text="Optional category for organizing forms"
     )
 
     def save(self, *args, **kwargs):
@@ -63,7 +61,7 @@ class FormField(models.Model):
     conditional_logic = models.JSONField(
         default=dict,
         blank=True,
-        help_text="JSON structure defining field visibility/validation conditions"
+        help_text="JSON structure defining field visibility/validation conditions",
     )
 
     class Meta:

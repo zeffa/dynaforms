@@ -1,7 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .models import FormField, FormFieldOption, FormSubmission, FormTemplate
 from .serializers import (
     FormFieldOptionSerializer,
@@ -29,14 +30,21 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         form_data = request.data
         for field in form_template.fields.all():
             if field.field_name not in form_data:
-                return Response({"message": f"Missing field: {field.field_name}"}, status=400)
+                return Response(
+                    {"message": f"Missing field: {field.field_name}"}, status=400
+                )
         form_submission = FormSubmission.objects.create(
             form_template=form_template,
             submission_data=form_data,
             # submitted_by=request.user,
             ip_address=request.META.get("REMOTE_ADDR"),
         )
-        return Response({"message": "Form submitted successfully", "submission_id": form_submission.id})
+        return Response(
+            {
+                "message": "Form submitted successfully",
+                "submission_id": form_submission.id,
+            }
+        )
 
 
 class FormFieldViewSet(viewsets.ModelViewSet):
@@ -58,13 +66,16 @@ class FormStatisticsViewSet(viewsets.ViewSet):
     """
     A simple ViewSet for retrieving form statistics.
     """
+
     def list(self, request):
         total_forms = FormTemplate.objects.count()
         active_forms = FormTemplate.objects.filter(is_active=True).count()
         total_submissions = FormSubmission.objects.count()
-        
-        return Response({
-            'total_forms': total_forms,
-            'active_forms': active_forms,
-            'total_submissions': total_submissions
-        })
+
+        return Response(
+            {
+                "total_forms": total_forms,
+                "active_forms": active_forms,
+                "total_submissions": total_submissions,
+            }
+        )
