@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FormTemplate, FormField, FieldOption } from '../types/form';
 
 const WIDGET_TYPES = [
@@ -18,22 +18,22 @@ const WIDGET_TYPES = [
 ];
 
 interface FormBuilderProps {
-  onSave: (formData: any) => void;
-  initialData?: Partial<FormTemplate>;
+  formData: Partial<FormTemplate>;
+  onChange: (data: Partial<FormTemplate>) => void;
+  onSave: () => void;
   loading?: boolean;
 }
 
-const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading = false }) => {
-  const [formTemplate, setFormTemplate] = useState({
-    name: initialData?.name || '',
-    description: initialData?.description || '',
-    category: initialData?.category || '',
-    is_active: initialData?.is_active ?? true,
-  });
+const FormBuilder: React.FC<FormBuilderProps> = ({ formData, onChange, onSave, loading = false }) => {
+  const { name = '', description = '', category = '', is_active = true, fields = [] } = formData;
 
-  const [fields, setFields] = useState<Partial<FormField>[]>(
-    initialData?.fields || []
-  );
+  const handleTemplateChange = (updates: Partial<FormTemplate>) => {
+    onChange({ ...formData, ...updates });
+  };
+
+  const handleFieldsChange = (newFields: Partial<FormField>[]) => {
+    onChange({ ...formData, fields: newFields as FormField[] });
+  };
 
   const addField = () => {
     const newField: Partial<FormField> = {
@@ -44,46 +44,40 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
       help_text: '',
       is_required: false,
       order: fields.length,
+      options: [],
       widget_config: {},
       validation_rules: {},
-      options: [],
     };
-    setFields([...fields, newField]);
+    handleFieldsChange([...fields, newField]);
   };
 
   const updateField = (index: number, updates: Partial<FormField>) => {
-    setFields(prev => prev.map((field, i) => 
+    const newFields = fields.map((field, i) =>
       i === index ? { ...field, ...updates } : field
-    ));
+    );
+    handleFieldsChange(newFields);
   };
 
   const removeField = (index: number) => {
-    setFields(prev => prev.filter((_, i) => i !== index));
+    handleFieldsChange(fields.filter((_, i) => i !== index));
   };
 
   const moveField = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index > 0) {
-      setFields(prev => {
-        const newFields = [...prev];
-        [newFields[index], newFields[index - 1]] = [newFields[index - 1], newFields[index]];
-        return newFields;
-      });
-    } else if (direction === 'down' && index < fields.length - 1) {
-      setFields(prev => {
-        const newFields = [...prev];
-        [newFields[index], newFields[index + 1]] = [newFields[index + 1], newFields[index]];
-        return newFields;
-      });
+    if ((direction === 'up' && index > 0) || (direction === 'down' && index < fields.length - 1)) {
+      const newFields = [...fields];
+      const swapIndex = direction === 'up' ? index - 1 : index + 1;
+      [newFields[index], newFields[swapIndex]] = [newFields[swapIndex], newFields[index]];
+      handleFieldsChange(newFields);
     }
   };
 
   const addOption = (fieldIndex: number) => {
-    updateField(fieldIndex, {
-      options: [
-        ...(fields[fieldIndex].options || []),
-        { value: '', label: '', order: fields[fieldIndex].options?.length || 0 }
-      ]
-    });
+    const field = fields[fieldIndex];
+    const newOptions = [
+      ...(field.options || []),
+      { value: '', label: '', order: field.options?.length || 0 },
+    ];
+    updateField(fieldIndex, { options: newOptions });
   };
 
   const updateOption = (fieldIndex: number, optionIndex: number, updates: Partial<FieldOption>) => {
@@ -94,6 +88,20 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
     updateField(fieldIndex, { options: updatedOptions });
   };
 
+  const updateFieldConfig = (
+    fieldIndex: number,
+    configType: 'widget_config' | 'validation_rules',
+    key: string,
+    value: any
+  ) => {
+    const field = fields[fieldIndex];
+    const newConfig = { ...(field as any)[configType], [key]: value };
+    if (value === '' || value === null) {
+      delete newConfig[key];
+    }
+    updateField(fieldIndex, { [configType]: newConfig });
+  };
+
   const removeOption = (fieldIndex: number, optionIndex: number) => {
     const field = fields[fieldIndex];
     const updatedOptions = field.options?.filter((_, i) => i !== optionIndex) || [];
@@ -102,16 +110,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = {
-      ...formTemplate,
-      fields_data: fields.map((field, index) => ({
-        ...field,
-        order: index,
-        field_name: field.field_name || field.label?.toLowerCase().replace(/\s+/g, '_') || `field_${index}`,
-      }))
-    };
-    console.log(JSON.stringify(formData));
-    onSave(formData);
+    onSave();
   };
 
   const needsOptions = (widgetType: string) => {
@@ -134,8 +133,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
               </label>
               <input
                 type="text"
-                value={formTemplate.name}
-                onChange={(e) => setFormTemplate(prev => ({ ...prev, name: e.target.value }))}
+                value={name}
+                onChange={(e) => handleTemplateChange({ name: e.target.value })}
                 className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., Employee Onboarding, Loan Application"
                 required
@@ -148,8 +147,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
               </label>
               <input
                 type="text"
-                value={formTemplate.category}
-                onChange={(e) => setFormTemplate(prev => ({ ...prev, category: e.target.value }))}
+                value={category}
+                onChange={(e) => handleTemplateChange({ category: e.target.value })}
                 className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., HR, Finance, Customer Service"
               />
@@ -162,8 +161,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
               Description
             </label>
             <textarea
-              value={formTemplate.description}
-              onChange={(e) => setFormTemplate(prev => ({ ...prev, description: e.target.value }))}
+              value={description}
+              onChange={(e) => handleTemplateChange({ description: e.target.value })}
               className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               rows={3}
               placeholder="Brief description of what this form is for..."
@@ -174,8 +173,8 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
             <label className="flex items-center space-x-2">
               <input
                 type="checkbox"
-                checked={formTemplate.is_active}
-                onChange={(e) => setFormTemplate(prev => ({ ...prev, is_active: e.target.checked }))}
+                checked={is_active}
+                onChange={(e) => handleTemplateChange({ is_active: e.target.checked })}
                 className="text-blue-600"
               />
               <span className="text-sm font-medium text-gray-700">Active (visible to users)</span>
@@ -306,6 +305,78 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                   className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   placeholder="Additional instructions or help for this field"
                 />
+              </div>
+
+              {/* Advanced Settings for widget_config and validation_rules */}
+              <div className="bg-gray-50 p-4 rounded-md mt-4">
+                <h5 className="font-medium text-gray-700 mb-2">Advanced Settings</h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* minLength & maxLength for text-based inputs */}
+                  {['text', 'textarea', 'email', 'password', 'url', 'phone'].includes(field.widget_type || 'text') && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Min Length</label>
+                        <input
+                          type="number"
+                          placeholder="e.g., 5"
+                          value={field.validation_rules?.minLength || ''}
+                          onChange={(e) => updateFieldConfig(index, 'validation_rules', 'minLength', e.target.value ? parseInt(e.target.value) : '')}
+                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Max Length</label>
+                        <input
+                          type="number"
+                          placeholder="e.g., 100"
+                          value={field.validation_rules?.maxLength || ''}
+                          onChange={(e) => updateFieldConfig(index, 'validation_rules', 'maxLength', e.target.value ? parseInt(e.target.value) : '')}
+                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* minValue & maxValue for number inputs */}
+                  {field.widget_type === 'number' && (
+                    <>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Min Value</label>
+                        <input
+                          type="number"
+                          placeholder="e.g., 0"
+                          value={field.validation_rules?.minValue || ''}
+                          onChange={(e) => updateFieldConfig(index, 'validation_rules', 'minValue', e.target.value ? parseInt(e.target.value) : '')}
+                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Max Value</label>
+                        <input
+                          type="number"
+                          placeholder="e.g., 100"
+                          value={field.validation_rules?.maxValue || ''}
+                          onChange={(e) => updateFieldConfig(index, 'validation_rules', 'maxValue', e.target.value ? parseInt(e.target.value) : '')}
+                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Rows for textarea */}
+                  {field.widget_type === 'textarea' && (
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Rows</label>
+                      <input
+                        type="number"
+                        placeholder="e.g., 4"
+                        value={field.widget_config?.rows || ''}
+                        onChange={(e) => updateFieldConfig(index, 'widget_config', 'rows', e.target.value ? parseInt(e.target.value) : '')}
+                        className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Options for select, radio, checkbox */}

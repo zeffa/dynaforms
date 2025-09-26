@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-// import FormList from '../../../components/FormList';
 import FormBuilder from '@/components/FormBuilder';
+import JSONEditor from '@/components/JSONEditor'; // Import the new component
 import { formApi } from '@/services/formApi';
 import { FormTemplate } from '@/types/form';
 import FormList from '@/components/FormList';
@@ -11,18 +11,21 @@ import FormList from '@/components/FormList';
 const AdminFormsPage: React.FC = () => {
   const router = useRouter();
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
-  const [selectedForm, setSelectedForm] = useState<FormTemplate | null>(null);
+  const [editorMode, setEditorMode] = useState<'visual' | 'json'>('visual');
+  const [formData, setFormData] = useState<Partial<FormTemplate>>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleCreateForm = () => {
-    setSelectedForm(null);
+    setFormData({ name: '', description: '', category: '', is_active: true, fields: [] });
     setView('create');
+    setEditorMode('visual');
   };
 
   const handleEditForm = (form: FormTemplate) => {
-    setSelectedForm(form);
+    setFormData(form);
     setView('edit');
+    setEditorMode('visual');
   };
 
   const handleViewSubmissions = (form: FormTemplate) => {
@@ -36,9 +39,7 @@ const AdminFormsPage: React.FC = () => {
         alert('Please login first');
         return;
       }
-
       await formApi.deleteForm(form.id, token);
-      // Refresh the list
       setRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to delete form:', error);
@@ -46,24 +47,27 @@ const AdminFormsPage: React.FC = () => {
     }
   };
 
-  const handleSaveForm = async (formData: any) => {
+  const handleSaveForm = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('authToken') || '';
-      
-      // if (!token) {
-      //   alert('Please login first');
-      //   return;
-      // }
-      
-      if (view === 'edit' && selectedForm) {
-        await formApi.updateForm(selectedForm.id, formData, token);
+      const dataToSave = {
+        ...formData,
+        fields_data: formData.fields?.map((field, index) => ({
+          ...field,
+          order: index,
+          field_name: field.field_name || field.label?.toLowerCase().replace(/\s+/g, '_') || `field_${index}`,
+        }))
+      };
+
+      if (view === 'edit' && formData.id) {
+        await formApi.updateForm(formData.id, dataToSave, token);
       } else {
-        await formApi.createForm(formData, token);
+        await formApi.createForm(dataToSave, token);
       }
       
       setView('list');
-      setRefreshKey(prev => prev + 1); // Refresh the form list
+      setRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to save form:', error);
       alert('Failed to save form. Please try again.');
@@ -74,7 +78,7 @@ const AdminFormsPage: React.FC = () => {
 
   const handleBackToList = () => {
     setView('list');
-    setSelectedForm(null);
+    setFormData({});
   };
 
   if (view === 'create' || view === 'edit') {
@@ -82,28 +86,56 @@ const AdminFormsPage: React.FC = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-6">
-            <button
-              type='button'
-              onClick={handleBackToList}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-            >
+            <button type='button' onClick={handleBackToList} className="flex items-center text-blue-600 hover:text-blue-800 font-medium">
               ← Back to Forms
             </button>
             <h1 className="text-3xl font-bold text-gray-900 mt-4">
               {view === 'edit' ? 'Edit Form' : 'Create New Form'}
             </h1>
-            {view === 'edit' && selectedForm && (
-              <p className="text-gray-600 mt-2">
-                Editing: {selectedForm.name}
-              </p>
+            {view === 'edit' && formData && (
+              <p className="text-gray-600 mt-2">Editing: {formData.name}</p>
             )}
           </div>
-          
-          <FormBuilder
-            onSave={handleSaveForm}
-            initialData={selectedForm || undefined}
-            loading={loading}
-          />
+
+          {/* Editor Mode Toggle */}
+          <div className="mb-6 flex justify-end">
+            <div className="bg-gray-200 rounded-lg p-1 flex space-x-1">
+              <button
+                onClick={() => setEditorMode('visual')}
+                className={`px-4 py-2 text-sm font-medium rounded-md ${editorMode === 'visual' ? 'bg-white text-blue-600 shadow' : 'text-gray-600'}`}>
+                Visual Editor
+              </button>
+              <button
+                onClick={() => setEditorMode('json')}
+                className={`px-4 py-2 text-sm font-medium rounded-md ${editorMode === 'json' ? 'bg-white text-blue-600 shadow' : 'text-gray-600'}`}>
+                JSON Editor
+              </button>
+            </div>
+          </div>
+
+          {editorMode === 'visual' ? (
+            <FormBuilder
+              formData={formData}
+              onChange={setFormData}
+              onSave={handleSaveForm}
+              loading={loading}
+            />
+          ) : (
+            <>
+              <JSONEditor
+                jsonData={formData}
+                onChange={setFormData}
+                loading={loading}
+              />
+              <button
+                type="button"
+                onClick={handleSaveForm}
+                disabled={loading}
+                className="mt-6 w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50">
+                {loading ? 'Saving...' : 'Save Form'}
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
