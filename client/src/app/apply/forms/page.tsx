@@ -2,14 +2,14 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-// import FormList from '@/components/FormList';
+import FormList from '@/components/FormList';
 import { FormTemplate } from '@/types/form';
 
 const FormsDirectoryPage: React.FC = () => {
   const router = useRouter();
 
   const handleFormSelect = (form: FormTemplate) => {
-    router.push(`/forms/${form.slug}`);
+    router.push(`/apply/forms/${form.slug}`);
   };
 
   return (
@@ -28,9 +28,9 @@ const FormsDirectoryPage: React.FC = () => {
 
       {/* Forms Section */}
       <div className="py-12">
-        {/* <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FormList onFormSelect={handleFormSelect} />
-        </div> */}
+        </div>
       </div>
 
       {/* Help Section */}

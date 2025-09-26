@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 // import FormList from '../../../components/FormList';
 import FormBuilder from '@/components/FormBuilder';
-// import { formApi } from '../../../services/formApi';
+import { formApi } from '@/services/formApi';
 import { FormTemplate } from '@/types/form';
+import FormList from '@/components/FormList';
 
 const AdminFormsPage: React.FC = () => {
   const router = useRouter();
@@ -36,19 +37,9 @@ const AdminFormsPage: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/forms/${form.id}/`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        // Refresh the list
-        setRefreshKey(prev => prev + 1);
-      } else {
-        throw new Error('Failed to delete form');
-      }
+      await formApi.deleteForm(form.id, token);
+      // Refresh the list
+      setRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to delete form:', error);
       alert('Failed to delete form. Please try again.');
@@ -58,18 +49,18 @@ const AdminFormsPage: React.FC = () => {
   const handleSaveForm = async (formData: any) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken') || '';
       
-      if (!token) {
-        alert('Please login first');
-        return;
+      // if (!token) {
+      //   alert('Please login first');
+      //   return;
+      // }
+      
+      if (view === 'edit' && selectedForm) {
+        await formApi.updateForm(selectedForm.id, formData, token);
+      } else {
+        await formApi.createForm(formData, token);
       }
-      
-    //   if (view === 'edit' && selectedForm) {
-    //     await formApi.updateForm(selectedForm.id, formData, token);
-    //   } else {
-    //     await formApi.createForm(formData, token);
-    //   }
       
       setView('list');
       setRefreshKey(prev => prev + 1); // Refresh the form list
@@ -154,15 +145,15 @@ const AdminFormsPage: React.FC = () => {
           </div>
         </div>
         
-        {/* Forms List */}
-        {/* <div key={refreshKey}>
+        Forms List
+        <div key={refreshKey}>
           <FormList
             isAdmin={true}
             onFormSelect={handleViewSubmissions}
             onEditForm={handleEditForm}
             onDeleteForm={handleDeleteForm}
           />
-        </div> */}
+        </div>
       </div>
     </div>
   );

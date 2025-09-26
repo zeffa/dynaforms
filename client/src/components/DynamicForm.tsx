@@ -88,7 +88,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         handleInputChange(field.field_name, e.target.value);
       },
-      className: `w-full p-3 border rounded-lg ${
+      className: `w-full p-3 text-gray-700 border rounded-lg ${
         errors[field.field_name] ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
       } focus:ring-2 focus:border-transparent transition-colors`,
       required: field.is_required

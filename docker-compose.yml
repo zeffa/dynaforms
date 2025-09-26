@@ -1,19 +1,19 @@
 services:
   client:
     build: 
-      context: ./frontend
+      context: ./client
       dockerfile: Dockerfile
     container_name: dynamic_forms_client
     image: dynamic-forms-client
     ports:
       - "3080:3000"
     volumes:
-      - ./frontend:/app
+      - ./client:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
     env_file:
-      - ./frontend/.env
+      - ./client/.env.local
     command: ["npm", "run", "dev"]
     networks:
       - dynamic-forms

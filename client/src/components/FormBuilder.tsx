@@ -110,6 +110,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
         field_name: field.field_name || field.label?.toLowerCase().replace(/\s+/g, '_') || `field_${index}`,
       }))
     };
+    console.log(JSON.stringify(formData));
     onSave(formData);
   };
 
@@ -129,13 +130,13 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Form Name *
+                Form Name<span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formTemplate.name}
                 onChange={(e) => setFormTemplate(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., Employee Onboarding, Loan Application"
                 required
               />
@@ -149,7 +150,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                 type="text"
                 value={formTemplate.category}
                 onChange={(e) => setFormTemplate(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., HR, Finance, Customer Service"
               />
               <p className="text-xs text-gray-500 mt-1">Use categories to organize your forms</p>
@@ -163,7 +164,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
             <textarea
               value={formTemplate.description}
               onChange={(e) => setFormTemplate(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
               rows={3}
               placeholder="Brief description of what this form is for..."
             />
@@ -210,7 +211,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                     type="button"
                     onClick={() => moveField(index, 'up')}
                     disabled={index === 0}
-                    className="text-sm bg-gray-100 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
+                    className="text-sm bg-gray-700 text-white px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
                     title="Move up"
                   >
                     ↑
@@ -219,7 +220,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                     type="button"
                     onClick={() => moveField(index, 'down')}
                     disabled={index === fields.length - 1}
-                    className="text-sm bg-gray-100 px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
+                    className="text-sm bg-gray-700 text-white px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
                     title="Move down"
                   >
                     ↓
@@ -227,7 +228,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                   <button
                     type="button"
                     onClick={() => removeField(index)}
-                    className="text-sm bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200"
+                    className="text-sm bg-red-700 text-white px-2 py-1 rounded hover:bg-red-200 cursor-pointer"
                   >
                     Remove
                   </button>
@@ -243,7 +244,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                     type="text"
                     value={field.label}
                     onChange={(e) => updateField(index, { label: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     placeholder="What users will see"
                     required
                   />
@@ -258,7 +259,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                     value={field.field_name}
                     onChange={(e) => updateField(index, { field_name: e.target.value })}
                     placeholder="Auto-generated from label"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   />
                   <p className="text-xs text-gray-500">Internal field name (optional)</p>
                 </div>
@@ -270,7 +271,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                   <select
                     value={field.widget_type}
                     onChange={(e) => updateField(index, { widget_type: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     required
                     aria-label="Widget Type"
                   >
@@ -288,7 +289,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                     type="text"
                     value={field.placeholder}
                     onChange={(e) => updateField(index, { placeholder: e.target.value })}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                     placeholder="Hint text for users"
                   />
                 </div>
@@ -302,7 +303,7 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                   type="text"
                   value={field.help_text}
                   onChange={(e) => updateField(index, { help_text: e.target.value })}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                   placeholder="Additional instructions or help for this field"
                 />
               </div>
@@ -331,14 +332,14 @@ const FormBuilder: React.FC<FormBuilderProps> = ({ onSave, initialData, loading 
                           placeholder="Value"
                           value={option.value}
                           onChange={(e) => updateOption(index, optionIndex, { value: e.target.value })}
-                          className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 p-2 border text-gray-700 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                         />
                         <input
                           type="text"
                           placeholder="Display Label"
                           value={option.label}
                           onChange={(e) => updateOption(index, optionIndex, { label: e.target.value })}
-                          className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 p-2 border text-gray-700 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
                         />
                         <button
                           type="button"

@@ -8,13 +8,13 @@ ENV LANG=C.UTF-8 \
     PYTHONFAULTHANDLER=1
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends gcc g++ libmemcached-dev libgdal-dev libgeoip-dev build-essential \
+  && apt-get install -y --no-install-recommends gcc g++ libmemcached-dev libpq-dev libgdal-dev libgeoip-dev build-essential \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY Pipfile Pipfile.lock ./
-RUN pip install pipenv && pipenv install --system --deploy --ignore-pipfile
+RUN  pip install --upgrade pip &&  pip install pipenv && pipenv install --system --deploy --ignore-pipfile
 
 FROM python:3.12.3-slim-bullseye
 
@@ -24,6 +24,15 @@ ENV LANG=C.UTF-8 \
     PIP_NO_CACHE_DIR=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONFAULTHANDLER=1
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+     libpq5 \
+     libgdal28 \
+     libgeoip1 \
+     libmemcached11 \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
