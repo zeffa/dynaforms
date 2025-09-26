@@ -52,3 +52,19 @@ class FormSubmissionViewSet(viewsets.ModelViewSet):
 class FormFieldOptionViewSet(viewsets.ModelViewSet):
     queryset = FormFieldOption.objects.all()
     serializer_class = FormFieldOptionSerializer
+
+
+class FormStatisticsViewSet(viewsets.ViewSet):
+    """
+    A simple ViewSet for retrieving form statistics.
+    """
+    def list(self, request):
+        total_forms = FormTemplate.objects.count()
+        active_forms = FormTemplate.objects.filter(is_active=True).count()
+        total_submissions = FormSubmission.objects.count()
+        
+        return Response({
+            'total_forms': total_forms,
+            'active_forms': active_forms,
+            'total_submissions': total_submissions
+        })

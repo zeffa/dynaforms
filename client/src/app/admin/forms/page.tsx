@@ -8,6 +8,12 @@ import { formApi } from '@/services/formApi';
 import { FormTemplate } from '@/types/form';
 import FormList from '@/components/FormList';
 
+interface FormStatistics {
+  total_forms: number;
+  active_forms: number;
+  total_submissions: number;
+}
+
 const AdminFormsPage: React.FC = () => {
   const router = useRouter();
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
@@ -15,6 +21,28 @@ const AdminFormsPage: React.FC = () => {
   const [formData, setFormData] = useState<Partial<FormTemplate>>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [statistics, setStatistics] = useState<FormStatistics>({
+    total_forms: 0,
+    active_forms: 0,
+    total_submissions: 0
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        setStatsLoading(true);
+        const stats = await formApi.getFormStatistics();
+        setStatistics(stats);
+      } catch (error) {
+        console.error('Failed to fetch form statistics:', error);
+      } finally {
+        setStatsLoading(false);
+      }
+    };
+    
+    fetchStatistics();
+  }, [refreshKey]);
 
   const handleCreateForm = () => {
     setFormData({ name: '', description: '', category: '', is_active: true, fields: [] });
@@ -164,15 +192,33 @@ const AdminFormsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
             <div className="bg-blue-50 rounded-lg p-4">
               <div className="text-blue-600 text-sm font-medium">Total Forms</div>
-              <div className="text-2xl font-bold text-blue-900">--</div>
+              <div className="text-2xl font-bold text-blue-900">
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  statistics.total_forms.toLocaleString()
+                )}
+              </div>
             </div>
             <div className="bg-green-50 rounded-lg p-4">
               <div className="text-green-600 text-sm font-medium">Active Forms</div>
-              <div className="text-2xl font-bold text-green-900">--</div>
+              <div className="text-2xl font-bold text-green-900">
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  statistics.active_forms.toLocaleString()
+                )}
+              </div>
             </div>
             <div className="bg-purple-50 rounded-lg p-4">
               <div className="text-purple-600 text-sm font-medium">Total Submissions</div>
-              <div className="text-2xl font-bold text-purple-900">--</div>
+              <div className="text-2xl font-bold text-purple-900">
+                {statsLoading ? (
+                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                ) : (
+                  statistics.total_submissions.toLocaleString()
+                )}
+              </div>
             </div>
           </div>
         </div>

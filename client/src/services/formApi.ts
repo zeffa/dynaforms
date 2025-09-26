@@ -76,4 +76,18 @@ export const formApi = {
       throw new Error(errorData.detail || 'Failed to delete form');
     }
   },
+
+  async getFormStatistics(token?: string): Promise<{
+    total_forms: number;
+    active_forms: number;
+    total_submissions: number;
+  }> {
+    const response = await fetch(`${API_URL}/statistics/`, {
+      method: 'GET',
+      headers: getHeaders(token || ''),
+    });
+    const data = await handleResponse(response);
+    // Handle the case where the response is an array (default ViewSet list response)
+    return Array.isArray(data) ? data[0] : data;
+  },
 };
