@@ -177,7 +177,7 @@ const AdminFormsPage: React.FC = () => {
           </div>
         </div>
         
-        Forms List
+        {/* Forms List */}
         <div key={refreshKey}>
           <FormList
             isAdmin={true}
