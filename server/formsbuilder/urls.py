@@ -10,10 +10,10 @@ from .views import (
 )
 
 router = DefaultRouter()
-router.register(r"form-templates", FormTemplateViewSet)
-router.register(r"form-fields", FormFieldViewSet)
-router.register(r"form-submissions", FormSubmissionViewSet)
-router.register(r"form-field-options", FormFieldOptionViewSet)
+router.register(r"form-templates", FormTemplateViewSet, basename='form-template')
+router.register(r"form-fields", FormFieldViewSet, basename='form-field')
+router.register(r"form-submissions", FormSubmissionViewSet, basename='form-submission')
+router.register(r"form-field-options", FormFieldOptionViewSet, basename='form-field-option')
 router.register(r"statistics", FormStatisticsViewSet, basename='form-statistics')
 
 urlpatterns = [
