@@ -1,13 +1,12 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import type React from "react";
 import { useEffect, useState } from "react";
-import FormBuilder from "@/components/FormBuilder";
 import FormList from "@/components/FormList";
-import JSONEditor from "@/components/JSONEditor"; // Import the new component
 import { formApi } from "@/services/formApi";
 import type { FormTemplate } from "@/types/form";
+import { FormEditor } from "@/components/admin/FormEditor";
+import { StatsSection } from "@/components/admin/StatsSection";
 
 interface FormStatistics {
   total_forms: number;
@@ -118,68 +117,14 @@ const AdminFormsPage: React.FC = () => {
 
   if (view === "create" || view === "edit") {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <button
-              type="button"
-              onClick={handleBackToList}
-              className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-            >
-              ← Back to Forms
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900 mt-4">
-              {view === "edit" ? "Edit Form" : "Create New Form"}
-            </h1>
-            {view === "edit" && formData && (
-              <p className="text-gray-600 mt-2">Editing: {formData.name}</p>
-            )}
-          </div>
-
-          {/* Editor Mode Toggle */}
-          <div className="mb-6 flex justify-end">
-            <div className="bg-gray-200 rounded-lg p-1 flex space-x-1">
-              <button
-                onClick={() => setEditorMode("visual")}
-                className={`px-4 py-2 text-sm font-medium rounded-md ${editorMode === "visual" ? "bg-white text-blue-600 shadow" : "text-gray-600"}`}
-              >
-                Visual Editor
-              </button>
-              <button
-                onClick={() => setEditorMode("json")}
-                className={`px-4 py-2 text-sm font-medium rounded-md ${editorMode === "json" ? "bg-white text-blue-600 shadow" : "text-gray-600"}`}
-              >
-                JSON Editor
-              </button>
-            </div>
-          </div>
-
-          {editorMode === "visual" ? (
-            <FormBuilder
-              formData={formData}
-              onChange={setFormData}
-              onSave={handleSaveForm}
-              loading={loading}
-            />
-          ) : (
-            <>
-              <JSONEditor
-                jsonData={formData}
-                onChange={setFormData}
-                loading={loading}
-              />
-              <button
-                type="button"
-                onClick={handleSaveForm}
-                disabled={loading}
-                className="mt-6 w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50"
-              >
-                {loading ? "Saving..." : "Save Form"}
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      <FormEditor
+        formData={formData}
+        view={view}
+        loading={loading}
+        onBack={handleBackToList}
+        onSave={handleSaveForm}
+        onFormChange={setFormData}
+      />
     );
   }
 
@@ -208,44 +153,12 @@ const AdminFormsPage: React.FC = () => {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div className="bg-blue-50 rounded-lg p-4">
-              <div className="text-blue-600 text-sm font-medium">
-                Total Forms
-              </div>
-              <div className="text-2xl font-bold text-blue-900">
-                {statsLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  statistics.total_forms.toLocaleString()
-                )}
-              </div>
-            </div>
-            <div className="bg-green-50 rounded-lg p-4">
-              <div className="text-green-600 text-sm font-medium">
-                Active Forms
-              </div>
-              <div className="text-2xl font-bold text-green-900">
-                {statsLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  statistics.active_forms.toLocaleString()
-                )}
-              </div>
-            </div>
-            <div className="bg-purple-50 rounded-lg p-4">
-              <div className="text-purple-600 text-sm font-medium">
-                Total Submissions
-              </div>
-              <div className="text-2xl font-bold text-purple-900">
-                {statsLoading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  statistics.total_submissions.toLocaleString()
-                )}
-              </div>
-            </div>
-          </div>
+          <StatsSection
+            totalForms={statistics.total_forms}
+            activeForms={statistics.active_forms}
+            totalSubmissions={statistics.total_submissions}
+            loading={statsLoading}
+          />
         </div>
 
         {/* Forms List */}

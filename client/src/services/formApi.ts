@@ -65,7 +65,7 @@ export const formApi = {
   },
 
   async getFormBySlug(slug: string, token?: string): Promise<FormTemplate> {
-    const response = await fetch(`${API_URL}/form-templates/${slug}`, {
+    const response = await fetch(`${API_URL}/form-templates/${slug}/`, {
       headers: getHeaders(token),
     });
     return handleResponse(response);
