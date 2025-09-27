@@ -76,6 +76,7 @@ export const formApi = {
     formData: Record<string, any>,
     token?: string,
   ): Promise<FormTemplate> {
+    console.log(JSON.stringify(formData));
     const response = await fetch(`${API_URL}/form-templates/${id}/submit/`, {
       method: "POST",
       headers: getHeaders(token),
