@@ -3,6 +3,7 @@
 import { Inter } from 'next/font/google';
 import { useEffect, useState } from 'react';
 import AuthWrapper from '@/components/AuthWrapper';
+import AdminHeader from '@/components/AdminHeader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -28,7 +29,14 @@ export default function AdminLayout({
   return (
     <div className={inter.className}>
       <AuthWrapper>
-        {children}
+        <div className="min-h-screen bg-gray-50">
+          <AdminHeader />
+          <main className="py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {children}
+            </div>
+          </main>
+        </div>
       </AuthWrapper>
     </div>
   );
