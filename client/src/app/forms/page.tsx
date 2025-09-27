@@ -9,7 +9,7 @@ const FormsDirectoryPage: React.FC = () => {
   const router = useRouter();
 
   const handleFormSelect = (form: FormTemplate) => {
-    router.push(`/apply/forms/${form.slug}`);
+    router.push(`/forms/${form.slug}`);
   };
 
   return (
@@ -46,13 +46,13 @@ const FormsDirectoryPage: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="mailto:support@company.com"
+              href="mailto:zeffah.elly@gmail.com"
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
               Email Support
             </a>
             <a
-              href="tel:+1234567890"
+              href="tel:+254706567060"
               className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
             >
               Call Support

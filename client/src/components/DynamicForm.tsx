@@ -33,19 +33,17 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
       if (!conditionalLogic?.conditions?.length) return;
 
       const conditions = conditionalLogic.conditions;
-      const action = conditionalLogic.action || "show"; // Default to 'show' if not specified
+      const action = conditionalLogic.action || "show";
 
-      // Evaluate all conditions with AND logic
       const conditionsMet = conditions.every((condition) => {
         if (!condition.field) return false;
 
         const fieldValue = currentData[condition.field];
         const conditionValue = condition.value;
 
-        // Handle different data types properly
         switch (condition.operator) {
           case "equals":
-            return fieldValue == conditionValue; // Loose equality to handle string/number cases
+            return fieldValue == conditionValue;
 
           case "not_equals":
             return fieldValue != conditionValue;
@@ -90,16 +88,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         }
       });
 
-      // Apply the action (show/hide) based on whether conditions are met
       if (conditionsMet) {
         if (action === "show") {
           visible.add(field.field_name);
         } else {
-          // For 'hide' action, remove from visible set if it was added by default
           visible.delete(field.field_name);
         }
       } else if (action === "hide") {
-        // If conditions for hiding aren't met, show the field
         visible.add(field.field_name);
       }
     });

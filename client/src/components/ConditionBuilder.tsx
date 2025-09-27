@@ -36,8 +36,6 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
   const availableFields = allFields.filter(
     (f) => f.field_name !== field.field_name,
   );
-  console.log("allFields", allFields);
-  console.log("availableFields", availableFields);
   const conditions = field.conditional_logic?.conditions || [];
 
   const addCondition = () => {
@@ -103,13 +101,11 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
               >
                 <option value="">Select a field</option>
                 {availableFields
-                  // Filter out fields that shouldn't be used in conditions
                   .filter(
                     (field) =>
                       !["file", "image"].includes(field.widget_type || ""),
                   )
                   .map((field) => {
-                    // Create a more descriptive label
                     const fieldType =
                       WIDGET_TYPES.find((t) => t.value === field.widget_type)
                         ?.label ||
@@ -139,7 +135,12 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
                 <option value="not_equals">does not equal</option>
                 <option value="greater_than">is greater than</option>
                 <option value="less_than">is less than</option>
+                <option value="greater_than_or_equals">is greater than or equal to</option>
+                <option value="less_than_or_equals">is less than or equal to</option>
                 <option value="contains">contains</option>
+                <option value="not_contains">does not contain</option>
+                <option value="is_empty">is empty</option>
+                <option value="is_not_empty">is not empty</option>
               </select>
 
               <input

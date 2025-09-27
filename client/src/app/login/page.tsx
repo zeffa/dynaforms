@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { setAuthData } from "@/utils/auth";
@@ -13,7 +12,6 @@ export default function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Check if user is already logged in
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) {
@@ -45,13 +43,11 @@ export default function LoginPage() {
         throw new Error(data.detail || "Please check your credentials.");
       }
 
-      // Save the token and user data using our auth utility
       setAuthData(data.access, {
         username: data.username,
         isAdmin: data.is_admin,
       });
 
-      // Redirect to the intended page or admin dashboard
       const nextUrl = searchParams.get("next") || "/admin/forms";
       router.push(nextUrl);
     } catch (err) {
