@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Inter } from 'next/font/google';
-import { useEffect, useState } from 'react';
-import AuthWrapper from '@/components/AuthWrapper';
-import AdminHeader from '@/components/AdminHeader';
+import { Inter } from "next/font/google";
+import { useEffect, useState } from "react";
+import AdminHeader from "@/components/AdminHeader";
+import AuthWrapper from "@/components/AuthWrapper";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export default function AdminLayout({
   children,

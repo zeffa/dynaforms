@@ -1,43 +1,49 @@
-import { FormTemplate } from '@/types/form';
+import type { FormTemplate } from "@/types/form";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
-
 
 type Headers = Record<string, string>;
 
 const getHeaders = (token?: string): Headers => {
   const headers: Headers = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
-  
+
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token}`;
   }
-  
+
   return headers;
 };
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.detail || 'Something went wrong');
+    throw new Error(errorData.detail || "Something went wrong");
   }
   return response.json();
 };
 
 export const formApi = {
-  async createForm(formData: Partial<FormTemplate>, token?: string): Promise<FormTemplate> {
+  async createForm(
+    formData: Partial<FormTemplate>,
+    token?: string,
+  ): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/`, {
-      method: 'POST',
+      method: "POST",
       headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
     return handleResponse(response);
   },
 
-  async updateForm(id: number, formData: Partial<FormTemplate>, token?: string): Promise<FormTemplate> {
+  async updateForm(
+    id: number,
+    formData: Partial<FormTemplate>,
+    token?: string,
+  ): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${id}/`, {
-      method: 'PUT',
+      method: "PUT",
       headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
@@ -65,9 +71,13 @@ export const formApi = {
     return handleResponse(response);
   },
 
-  async submitForm(id: number, formData: Record<string, any>, token?: string): Promise<FormTemplate> {
+  async submitForm(
+    id: number,
+    formData: Record<string, any>,
+    token?: string,
+  ): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${id}/submit/`, {
-      method: 'POST',
+      method: "POST",
       headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
@@ -76,12 +86,12 @@ export const formApi = {
 
   async deleteForm(id: number, token?: string): Promise<void> {
     const response = await fetch(`${API_URL}/form-templates/${id}/`, {
-      method: 'DELETE',
+      method: "DELETE",
       headers: getHeaders(token),
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to delete form');
+      throw new Error(errorData.detail || "Failed to delete form");
     }
   },
 
@@ -91,7 +101,7 @@ export const formApi = {
     total_submissions: number;
   }> {
     const response = await fetch(`${API_URL}/statistics/`, {
-      method: 'GET',
+      method: "GET",
       headers: getHeaders(token),
     });
     const data = await handleResponse(response);

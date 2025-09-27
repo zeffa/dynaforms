@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { formApi } from '@/services/formApi';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { formApi } from "@/services/formApi";
 
 export default function AdminHeader() {
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    router.push('/');
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("user");
+    router.push("/");
     router.refresh();
   };
 
@@ -21,7 +21,10 @@ export default function AdminHeader() {
           Admin Panel
         </Link>
         <nav className="flex space-x-8">
-          <Link href="/admin/forms" className="text-gray-700 hover:text-indigo-600">
+          <Link
+            href="/admin/forms"
+            className="text-gray-700 hover:text-indigo-600"
+          >
             Forms
           </Link>
           <button

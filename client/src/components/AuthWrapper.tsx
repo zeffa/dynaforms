@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function AuthWrapper({ 
-  children, 
-  requireAdmin = true 
-}: { 
-  children: React.ReactNode; 
-  requireAdmin?: boolean 
+export default function AuthWrapper({
+  children,
+  requireAdmin = true,
+}: {
+  children: React.ReactNode;
+  requireAdmin?: boolean;
 }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -17,41 +17,44 @@ export default function AuthWrapper({
   useEffect(() => {
     setIsClient(true);
     const currentPath = window.location.pathname;
-    
+
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        
+        const token = localStorage.getItem("authToken");
+
         if (!token) {
           router.push(`/login?next=${encodeURIComponent(currentPath)}`);
           return;
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/accounts/verify/`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/accounts/verify/`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ token }),
           },
-          body: JSON.stringify({ token }),
-        });
+        );
 
         if (!response.ok) {
           router.push(`/login?next=${encodeURIComponent(currentPath)}`);
           return;
         }
 
-        const userData = JSON.parse(localStorage.getItem('user') || '{}');
-        
+        const userData = JSON.parse(localStorage.getItem("user") || "{}");
+
         if (requireAdmin && !userData.isAdmin) {
-          router.push('/');
+          router.push("/");
           return;
         }
 
         setIsLoading(false);
       } catch (error) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
         router.push(`/login?next=${encodeURIComponent(currentPath)}`);
       }
     };

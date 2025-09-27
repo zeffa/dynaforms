@@ -6,8 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write"
+    "lint": "biome check . --max-diagnostics=1000",
+    "lint:fix": "biome check --write . --max-diagnostics=1000",
+    "format": "biome format --write ."
   },
   "dependencies": {
     "@types/react-json-editor-ajrm": "^2.5.6",

@@ -1,13 +1,23 @@
 // File location: types/form.ts
 export interface Condition {
   field: string;
-  operator: 'equals' | 'not_equals' | 'greater_than' | 'less_than' | 'contains' | 'not_contains' | 'greater_than_or_equals' | 'less_than_or_equals' | 'is_empty' | 'is_not_empty';
+  operator:
+    | "equals"
+    | "not_equals"
+    | "greater_than"
+    | "less_than"
+    | "contains"
+    | "not_contains"
+    | "greater_than_or_equals"
+    | "less_than_or_equals"
+    | "is_empty"
+    | "is_not_empty";
   value: string | number | boolean;
 }
 
 export interface ConditionalLogic {
   conditions: Condition[];
-  action: 'show' | 'hide';
+  action: "show" | "hide";
 }
 
 export interface FieldOption {

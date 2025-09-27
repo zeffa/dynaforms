@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FormField as FormFieldType, FormTemplate } from '@/types/form';
+import React, { useState } from "react";
+import type { FormField as FormFieldType, FormTemplate } from "@/types/form";
 
 interface DynamicFormProps {
   formTemplate: FormTemplate;
@@ -10,154 +10,181 @@ interface DynamicFormProps {
 const DynamicForm: React.FC<DynamicFormProps> = ({
   formTemplate,
   onSubmit,
-  loading = false
+  loading = false,
 }) => {
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [visibleFields, setVisibleFields] = useState<Set<string>>(new Set());
 
-  const evaluateConditions = (fields: FormFieldType[], currentData: Record<string, any>) => {
+  const evaluateConditions = (
+    fields: FormFieldType[],
+    currentData: Record<string, any>,
+  ) => {
     const visible = new Set<string>();
-    
-    fields.forEach(field => {
+
+    fields.forEach((field) => {
       if (!field.conditional_logic?.conditions?.length) {
         visible.add(field.field_name);
       }
     });
-    
-    fields.forEach(field => {
+
+    fields.forEach((field) => {
       const conditionalLogic = field.conditional_logic;
       if (!conditionalLogic?.conditions?.length) return;
-      
+
       const conditions = conditionalLogic.conditions;
-      const action = conditionalLogic.action || 'show'; // Default to 'show' if not specified
-      
+      const action = conditionalLogic.action || "show"; // Default to 'show' if not specified
+
       // Evaluate all conditions with AND logic
-      const conditionsMet = conditions.every(condition => {
+      const conditionsMet = conditions.every((condition) => {
         if (!condition.field) return false;
-        
+
         const fieldValue = currentData[condition.field];
         const conditionValue = condition.value;
-        
+
         // Handle different data types properly
         switch (condition.operator) {
-          case 'equals':
+          case "equals":
             return fieldValue == conditionValue; // Loose equality to handle string/number cases
-            
-          case 'not_equals':
+
+          case "not_equals":
             return fieldValue != conditionValue;
-            
-          case 'contains':
-            return fieldValue != null && String(fieldValue).includes(String(conditionValue));
-            
-          case 'not_contains':
-            return fieldValue != null && !String(fieldValue).includes(String(conditionValue));
-            
-          case 'greater_than':
+
+          case "contains":
+            return (
+              fieldValue != null &&
+              String(fieldValue).includes(String(conditionValue))
+            );
+
+          case "not_contains":
+            return (
+              fieldValue != null &&
+              !String(fieldValue).includes(String(conditionValue))
+            );
+
+          case "greater_than":
             return Number(fieldValue) > Number(conditionValue);
-            
-          case 'less_than':
+
+          case "less_than":
             return Number(fieldValue) < Number(conditionValue);
-            
-          case 'greater_than_or_equals':
+
+          case "greater_than_or_equals":
             return Number(fieldValue) >= Number(conditionValue);
-            
-          case 'less_than_or_equals':
+
+          case "less_than_or_equals":
             return Number(fieldValue) <= Number(conditionValue);
-            
-          case 'is_empty':
-            return fieldValue === '' || fieldValue == null || fieldValue === false;
-            
-          case 'is_not_empty':
-            return fieldValue !== '' && fieldValue != null && fieldValue !== false;
-            
+
+          case "is_empty":
+            return (
+              fieldValue === "" || fieldValue == null || fieldValue === false
+            );
+
+          case "is_not_empty":
+            return (
+              fieldValue !== "" && fieldValue != null && fieldValue !== false
+            );
+
           default:
             console.warn(`Unknown operator: ${condition.operator}`);
             return true;
         }
       });
-      
+
       // Apply the action (show/hide) based on whether conditions are met
       if (conditionsMet) {
-        if (action === 'show') {
+        if (action === "show") {
           visible.add(field.field_name);
         } else {
           // For 'hide' action, remove from visible set if it was added by default
           visible.delete(field.field_name);
         }
-      } else if (action === 'hide') {
+      } else if (action === "hide") {
         // If conditions for hiding aren't met, show the field
         visible.add(field.field_name);
       }
     });
-    
+
     return visible;
   };
-  
+
   // Update visible fields when form data changes
   React.useEffect(() => {
     // Debounce the evaluation to prevent excessive re-renders
     const timer = setTimeout(() => {
-      const newVisibleFields = evaluateConditions(formTemplate.fields, formData);
+      const newVisibleFields = evaluateConditions(
+        formTemplate.fields,
+        formData,
+      );
       setVisibleFields(newVisibleFields);
     }, 50);
-    
+
     return () => clearTimeout(timer);
   }, [formData, formTemplate.fields]);
 
   const handleInputChange = (fieldName: string, value: any) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [fieldName]: value
+      [fieldName]: value,
     }));
-    
+
     // Clear error when user starts typing
     if (errors[fieldName]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [fieldName]: ''
+        [fieldName]: "",
       }));
     }
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    
-    formTemplate.fields.forEach(field => {
-      if (field.is_required && (!formData[field.field_name] || formData[field.field_name] === '')) {
+
+    formTemplate.fields.forEach((field) => {
+      if (
+        field.is_required &&
+        (!formData[field.field_name] || formData[field.field_name] === "")
+      ) {
         newErrors[field.field_name] = `${field.label} is required`;
       }
-      
+
       // Add more validation based on field type and validation_rules
-      if (field.widget_type === 'email' && formData[field.field_name]) {
+      if (field.widget_type === "email" && formData[field.field_name]) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData[field.field_name])) {
-          newErrors[field.field_name] = 'Invalid email format';
+          newErrors[field.field_name] = "Invalid email format";
         }
       }
-      
+
       // Length validation
       if (field.validation_rules?.min_length && formData[field.field_name]) {
-        if (String(formData[field.field_name]).length < field.validation_rules.min_length) {
-          newErrors[field.field_name] = `Minimum ${field.validation_rules.min_length} characters required`;
+        if (
+          String(formData[field.field_name]).length <
+          field.validation_rules.min_length
+        ) {
+          newErrors[field.field_name] =
+            `Minimum ${field.validation_rules.min_length} characters required`;
         }
       }
-      
+
       if (field.validation_rules?.max_length && formData[field.field_name]) {
-        if (String(formData[field.field_name]).length > field.validation_rules.max_length) {
-          newErrors[field.field_name] = `Maximum ${field.validation_rules.max_length} characters allowed`;
+        if (
+          String(formData[field.field_name]).length >
+          field.validation_rules.max_length
+        ) {
+          newErrors[field.field_name] =
+            `Maximum ${field.validation_rules.max_length} characters allowed`;
         }
       }
-      
+
       // Pattern validation
       if (field.validation_rules?.pattern && formData[field.field_name]) {
         const pattern = new RegExp(field.validation_rules.pattern);
         if (!pattern.test(formData[field.field_name])) {
-          newErrors[field.field_name] = 'Invalid format';
+          newErrors[field.field_name] = "Invalid format";
         }
       }
     });
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -172,41 +199,48 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   const renderField = (field: FormFieldType) => {
     const isVisible = visibleFields.has(field.field_name);
     const fieldError = errors[field.field_name];
-    
+
     const commonProps = {
       id: field.field_name,
       name: field.field_name,
       placeholder: field.placeholder,
-      value: formData[field.field_name] ?? '',
-      onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const value = e.target.type === 'checkbox' 
-          ? (e.target as HTMLInputElement).checked 
-          : e.target.value;
+      value: formData[field.field_name] ?? "",
+      onChange: (
+        e: React.ChangeEvent<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >,
+      ) => {
+        const value =
+          e.target.type === "checkbox"
+            ? (e.target as HTMLInputElement).checked
+            : e.target.value;
         handleInputChange(field.field_name, value);
       },
       disabled: loading,
       className: `w-full p-3 text-gray-700 border rounded-lg ${
-        fieldError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+        fieldError
+          ? "border-red-500 focus:ring-red-500"
+          : "border-gray-300 focus:ring-blue-500"
       } focus:ring-2 focus:border-transparent transition-colors disabled:opacity-50 disabled:bg-gray-50`,
       required: field.is_required,
-      'aria-invalid': !!fieldError,
-      'aria-describedby': fieldError ? `${field.field_name}-error` : undefined
+      "aria-invalid": !!fieldError,
+      "aria-describedby": fieldError ? `${field.field_name}-error` : undefined,
     };
 
     switch (field.widget_type) {
-      case 'text':
-      case 'email':
-      case 'password':
-      case 'url':
-      case 'phone':
+      case "text":
+      case "email":
+      case "password":
+      case "url":
+      case "phone":
         return (
           <input
-            type={field.widget_type === 'phone' ? 'tel' : field.widget_type}
+            type={field.widget_type === "phone" ? "tel" : field.widget_type}
             {...commonProps}
           />
         );
-      
-      case 'number':
+
+      case "number":
         return (
           <input
             type="number"
@@ -216,75 +250,96 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             step={field.widget_config?.step}
           />
         );
-      
-      case 'date':
+
+      case "date":
         return <input type="date" {...commonProps} />;
-      
-      case 'datetime':
+
+      case "datetime":
         return <input type="datetime-local" {...commonProps} />;
-      
-      case 'textarea':
+
+      case "textarea":
         return (
           <textarea
             {...commonProps}
             rows={field.widget_config?.rows || 4}
-            onChange={(e) => handleInputChange(field.field_name, e.target.value)}
+            onChange={(e) =>
+              handleInputChange(field.field_name, e.target.value)
+            }
           />
         );
-      
-      case 'select':
+
+      case "select":
         return (
           <select {...commonProps}>
             <option value="">Select an option</option>
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
           </select>
         );
-      
-      case 'radio':
+
+      case "radio":
         return (
           <div className="space-y-3">
-            {field.options?.map(option => (
+            {field.options?.map((option) => (
               <label key={option.value} className="flex items-center space-x-3">
                 <input
                   type="radio"
                   name={field.field_name}
                   value={option.value}
                   checked={formData[field.field_name] === option.value}
-                  onChange={() => handleInputChange(field.field_name, option.value)}
+                  onChange={() =>
+                    handleInputChange(field.field_name, option.value)
+                  }
                   className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {option.label}
+                </span>
               </label>
             ))}
           </div>
         );
-      
-      case 'checkbox':
+
+      case "checkbox":
         if (field.options && field.options.length > 1) {
           // Multiple checkboxes
           return (
             <div className="space-y-3">
-              {field.options.map(option => (
-                <label key={option.value} className="flex items-center space-x-3">
+              {field.options.map((option) => (
+                <label
+                  key={option.value}
+                  className="flex items-center space-x-3"
+                >
                   <input
                     type="checkbox"
                     value={option.value}
-                    checked={(formData[field.field_name] || []).includes(option.value)}
+                    checked={(formData[field.field_name] || []).includes(
+                      option.value,
+                    )}
                     onChange={(e) => {
                       const currentValues = formData[field.field_name] || [];
                       if (e.target.checked) {
-                        handleInputChange(field.field_name, [...currentValues, option.value]);
+                        handleInputChange(field.field_name, [
+                          ...currentValues,
+                          option.value,
+                        ]);
                       } else {
-                        handleInputChange(field.field_name, currentValues.filter((v: string) => v !== option.value));
+                        handleInputChange(
+                          field.field_name,
+                          currentValues.filter(
+                            (v: string) => v !== option.value,
+                          ),
+                        );
                       }
                     }}
                     className="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
                   />
-                  <span className="text-sm font-medium text-gray-700">{option.label}</span>
+                  <span className="text-sm font-medium text-gray-700">
+                    {option.label}
+                  </span>
                 </label>
               ))}
             </div>
@@ -296,15 +351,19 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <input
                 type="checkbox"
                 checked={formData[field.field_name] || false}
-                onChange={(e) => handleInputChange(field.field_name, e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange(field.field_name, e.target.checked)
+                }
                 className="w-4 h-4 text-blue-600 focus:ring-blue-500 rounded"
               />
-              <span className="text-sm font-medium text-gray-700">{field.label}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {field.label}
+              </span>
             </label>
           );
         }
-      
-      case 'file':
+
+      case "file":
         return (
           <input
             type="file"
@@ -320,7 +379,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             className="w-full p-3 border border-gray-300 rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         );
-      
+
       default:
         return <input type="text" {...commonProps} />;
     }
@@ -329,9 +388,13 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   return (
     <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">{formTemplate.name}</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+          {formTemplate.name}
+        </h2>
         {formTemplate.description && (
-          <p className="text-gray-600 leading-relaxed">{formTemplate.description}</p>
+          <p className="text-gray-600 leading-relaxed">
+            {formTemplate.description}
+          </p>
         )}
         {formTemplate.category && (
           <span className="inline-block mt-3 px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full">
@@ -339,38 +402,42 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
           </span>
         )}
       </div>
-      
+
       <form onSubmit={handleSubmit} className="space-y-6">
-        {formTemplate.fields.map(field => {
+        {formTemplate.fields.map((field) => {
           const isVisible = visibleFields.has(field.field_name);
           const fieldError = errors[field.field_name];
-          
+
           return (
-            <div 
-              key={field.id} 
+            <div
+              key={field.id}
               className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                isVisible ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
+                isVisible ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               <div className="space-y-2">
-                <label 
-                  htmlFor={field.field_name} 
+                <label
+                  htmlFor={field.field_name}
                   className={`block text-sm font-semibold ${
-                    fieldError ? 'text-red-700' : 'text-gray-700'
+                    fieldError ? "text-red-700" : "text-gray-700"
                   }`}
                 >
                   {field.label}
-                  {field.is_required && <span className="text-red-500 ml-1">*</span>}
+                  {field.is_required && (
+                    <span className="text-red-500 ml-1">*</span>
+                  )}
                 </label>
-                
+
                 {renderField(field)}
-                
+
                 {field.help_text && (
-                  <p className="text-sm text-gray-500 mt-1">{field.help_text}</p>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {field.help_text}
+                  </p>
                 )}
-                
+
                 {fieldError && (
-                  <p 
+                  <p
                     id={`${field.field_name}-error`}
                     className="text-sm text-red-600 mt-1 font-medium"
                     role="alert"
@@ -382,7 +449,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         })}
-        
+
         <button
           type="submit"
           disabled={loading}
@@ -394,7 +461,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               Submitting...
             </div>
           ) : (
-            'Submit Form'
+            "Submit Form"
           )}
         </button>
       </form>
