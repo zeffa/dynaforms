@@ -1,6 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { formApi } from "@/services/formApi";
 import type { FormTemplate } from "@/types/form";
+import { setAuthData } from "@/utils/auth";
+
+interface LoginCredentials {
+  username: string;
+  password: string;
+}
+
+interface LoginResponse {
+  access: string;
+  refresh: string;
+  username: string;
+  is_admin: boolean;
+}
 
 export const formKeys = {
   all: ["forms"] as const,
@@ -85,5 +98,39 @@ export const useFormStatistics = (token?: string) => {
     queryKey: formKeys.stats(),
     queryFn: () => formApi.getFormStatistics(token),
     enabled: !!token,
+  });
+};
+
+export const useLoginMutation = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation<LoginResponse, Error, LoginCredentials>({
+    mutationFn: async (credentials) => {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/accounts/login/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "Login failed. Please check your credentials.");
+      }
+
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setAuthData(data.access, {
+        username: data.username,
+        isAdmin: data.is_admin,
+      });
+      // Invalidate any relevant queries if needed
+      queryClient.invalidateQueries({ queryKey: formKeys.lists() });
+    },
   });
 };
