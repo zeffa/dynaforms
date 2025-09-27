@@ -17,9 +17,24 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
     serializer_class = FormTemplateSerializer
 
     def get_permissions(self):
-        if self.action in ["submit_form", "list", "retrieve"]:
+        if self.action in ["submit_form", "list", "retrieve", "submissions"]:
             return [AllowAny()]
         return [IsAuthenticated()]
+        
+    @action(detail=True, methods=['get'])
+    def submissions(self, request, pk=None):
+        """
+        Retrieve all submissions for a specific form template.
+        """
+        form_template = self.get_object()
+        submissions = FormSubmission.objects.filter(form_template=form_template)
+        page = self.paginate_queryset(submissions)
+        if page is not None:
+            serializer = FormSubmissionSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+            
+        serializer = FormSubmissionSerializer(submissions, many=True)
+        return Response(serializer.data)
 
     def get_object(self):
         lookup_value = self.kwargs.get("pk")

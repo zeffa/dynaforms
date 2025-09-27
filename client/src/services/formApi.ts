@@ -95,6 +95,15 @@ export const formApi = {
     }
   },
 
+  async getFormSubmissions(formId: number, token?: string): Promise<any[]> {
+    const response = await fetch(`${API_URL}/form-templates/${formId}/submissions/`, {
+      headers: getHeaders(token),
+    });
+    const data = await handleResponse(response);
+    // Handle both the new paginated response and the old array response
+    return data.results || data;
+  },
+
   async getFormStatistics(token?: string): Promise<{
     total_forms: number;
     active_forms: number;
