@@ -8,7 +8,7 @@ const HomePage: React.FC = () => {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    router.push('/forms');
+    router.push('/apply/forms');
   };
 
   const handleAdminLogin = () => {
@@ -33,12 +33,14 @@ const HomePage: React.FC = () => {
               </div>
               <div className="flex gap-4">
                 <button
+                  type="button"
                   onClick={handleGetStarted}
                   className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   View Forms
                 </button>
                 <button
+                  type="button"
                   onClick={handleAdminLogin}
                   className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
                 >
@@ -63,12 +65,14 @@ const HomePage: React.FC = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
+                type="button"
                 onClick={handleGetStarted}
                 className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors text-lg font-semibold"
               >
                 Browse Forms
               </button>
               <button
+                type="button"
                 onClick={handleAdminLogin}
                 className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition-colors text-lg font-semibold"
               >

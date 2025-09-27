@@ -32,7 +32,8 @@ const AdminFormsPage: React.FC = () => {
     const fetchStatistics = async () => {
       try {
         setStatsLoading(true);
-        const stats = await formApi.getFormStatistics();
+        const token = localStorage.getItem('authToken');
+        const stats = await formApi.getFormStatistics(token || '');
         setStatistics(stats);
       } catch (error) {
         console.error('Failed to fetch form statistics:', error);
@@ -63,11 +64,7 @@ const AdminFormsPage: React.FC = () => {
   const handleDeleteForm = async (form: FormTemplate) => {
     try {
       const token = localStorage.getItem('authToken');
-      if (!token) {
-        alert('Please login first');
-        return;
-      }
-      await formApi.deleteForm(form.id, token);
+      await formApi.deleteForm(form.id, token || '');
       setRefreshKey(prev => prev + 1);
     } catch (error) {
       console.error('Failed to delete form:', error);
@@ -89,9 +86,9 @@ const AdminFormsPage: React.FC = () => {
       };
 
       if (view === 'edit' && formData.id) {
-        await formApi.updateForm(formData.id, dataToSave, token);
+        await formApi.updateForm(formData.id, dataToSave, token || '');
       } else {
-        await formApi.createForm(dataToSave, token);
+        await formApi.createForm(dataToSave, token || '');
       }
       
       setView('list');
@@ -109,7 +106,7 @@ const AdminFormsPage: React.FC = () => {
     setFormData({});
   };
 
-  if (view === 'create' || view === 'edit') {
+  if (view === 'create' || view === 'edit') { 
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,6 +177,7 @@ const AdminFormsPage: React.FC = () => {
               <p className="text-gray-600 mt-2">Create and manage your dynamic forms</p>
             </div>
             <button
+              type="button"
               onClick={handleCreateForm}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium flex items-center gap-2 transition-colors"
             >

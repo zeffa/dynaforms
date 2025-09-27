@@ -3,10 +3,19 @@ import { FormTemplate } from '@/types/form';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 
-const getHeaders = (token: string) => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`,
-});
+type Headers = Record<string, string>;
+
+const getHeaders = (token?: string): Headers => {
+  const headers: Headers = {
+    'Content-Type': 'application/json',
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  return headers;
+};
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
@@ -20,7 +29,7 @@ export const formApi = {
   async createForm(formData: Partial<FormTemplate>, token?: string): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/`, {
       method: 'POST',
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
     return handleResponse(response);
@@ -29,7 +38,7 @@ export const formApi = {
   async updateForm(id: number, formData: Partial<FormTemplate>, token?: string): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${id}/`, {
       method: 'PUT',
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
     return handleResponse(response);
@@ -37,22 +46,21 @@ export const formApi = {
 
   async getForms(token?: string): Promise<FormTemplate[]> {
     const response = await fetch(`${API_URL}/form-templates/`, {
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
     });
-    console.log(response);
     return handleResponse(response);
   },
 
   async getForm(id: number, token?: string): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${id}/`, {
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
     });
     return handleResponse(response);
   },
 
   async getFormBySlug(slug: string, token?: string): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${slug}`, {
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
     });
     return handleResponse(response);
   },
@@ -60,7 +68,7 @@ export const formApi = {
   async submitForm(id: number, formData: Record<string, any>, token?: string): Promise<FormTemplate> {
     const response = await fetch(`${API_URL}/form-templates/${id}/submit/`, {
       method: 'POST',
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
       body: JSON.stringify(formData),
     });
     return handleResponse(response);
@@ -69,7 +77,7 @@ export const formApi = {
   async deleteForm(id: number, token?: string): Promise<void> {
     const response = await fetch(`${API_URL}/form-templates/${id}/`, {
       method: 'DELETE',
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
     });
     if (!response.ok) {
       const errorData = await response.json();
@@ -84,7 +92,7 @@ export const formApi = {
   }> {
     const response = await fetch(`${API_URL}/statistics/`, {
       method: 'GET',
-      headers: getHeaders(token || ''),
+      headers: getHeaders(token),
     });
     const data = await handleResponse(response);
     // Handle the case where the response is an array (default ViewSet list response)
