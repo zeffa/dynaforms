@@ -5,6 +5,7 @@ import { useState } from "react";
 import JSONInput from "react-json-editor-ajrm";
 import locale from "react-json-editor-ajrm/locale/en";
 import type { FormTemplate } from "@/types/form";
+import { sampleFormTemplate, conditionalLogic, options } from "@/lib/sample";
 
 interface JSONEditorProps {
   jsonData: Partial<FormTemplate>;
@@ -75,59 +76,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
               Complete Form Template Example
             </h3>
             <pre className="bg-gray-100 p-3 rounded text-xs mb-4 overflow-x-auto">
-              <code>{`{
-  "name": "Sample Form",
-  "description": "A sample form with various field types",
-  "category": "general",
-  "is_active": true,
-  "fields": [
-    {
-      "id": 1,
-      "field_name": "full_name",
-      "label": "Full Name",
-      "widget_type": "text",
-      "placeholder": "Enter your full name",
-      "is_required": true,
-      "order": 1,
-      "widget_config": {
-        "max_length": 100
-      },
-      "validation_rules": {
-        "minLength": 2
-      }
-    },
-    {
-      "id": 2,
-      "field_name": "age",
-      "label": "Age",
-      "widget_type": "number",
-      "is_required": true,
-      "order": 2,
-      "widget_config": {
-        "min_value": 18,
-        "max_value": 120
-      }
-    },
-    {
-      "id": 3,
-      "field_name": "newsletter",
-      "label": "Subscribe to newsletter",
-      "widget_type": "checkbox",
-      "is_required": false,
-      "order": 3,
-      "conditional_logic": {
-        "action": "show",
-        "conditions": [
-          {
-            "field": "age",
-            "operator": "greater_than_or_equals",
-            "value": 18
-          }
-        ]
-      }
-    }
-  ]
-}`}</code>
+              <code>{`${JSON.stringify(sampleFormTemplate, null, 2)}`}</code>
             </pre>
 
             <h3 className="font-bold text-lg mb-3 text-gray-800">
@@ -178,18 +127,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
               Add show/hide logic to fields based on other field values:
             </p>
             <pre className="bg-gray-100 p-2 rounded text-xs mb-2">
-              <code>{`"conditional_logic": {
-  "action": "show", // or "hide"
-  "conditions": [
-    {
-      "field": "other_field_name",
-      "operator": "equals", // or "not_equals", "greater_than", "less_than", 
-                          // "contains", "not_contains", "greater_than_or_equals",
-                          // "less_than_or_equals", "is_empty", "is_not_empty"
-      "value": "expected_value" // can be string, number, or boolean
-    }
-  ]
-}`}</code>
+              <code>{`${JSON.stringify(conditionalLogic, null, 2)}`}</code>
             </pre>
             <h4 className="font-bold mt-4 mb-2">
               Options (for select, radio, checkbox)
@@ -199,11 +137,7 @@ const JSONEditor: React.FC<JSONEditorProps> = ({
               following structure:
             </p>
             <pre className="bg-gray-100 p-2 rounded text-xs">
-              <code>{`{
-  "value": "option1",
-  "label": "Option 1",
-  "order": 1
-}`}</code>
+              <code>{`${JSON.stringify(options, null, 2)}`}</code>
             </pre>
           </div>
         )}

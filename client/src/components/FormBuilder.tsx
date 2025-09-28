@@ -67,7 +67,6 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
     const newFields = fields.map((field, i) =>
       i === index ? { ...field, ...updates } : field,
     );
-    console.log("newFields", newFields);
     handleFieldsChange(newFields);
   };
 
