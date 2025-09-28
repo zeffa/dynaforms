@@ -29,10 +29,10 @@ const FormList: React.FC<FormListProps> = ({
         let fetchedForms;
         if (isAdmin) {
           const token = localStorage.getItem("authToken") || "";
-          // if (!token) {
-          //   setError('Authentication required.');
-          //   return;
-          // }
+          if (!token) {
+            setError('Authentication required.');
+            return;
+          }
           fetchedForms = await formApi.getForms(token);
         } else {
           fetchedForms = await formApi.getForms();

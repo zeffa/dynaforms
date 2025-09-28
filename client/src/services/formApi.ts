@@ -100,7 +100,6 @@ export const formApi = {
       headers: getHeaders(token),
     });
     const data = await handleResponse(response);
-    // Handle both the new paginated response and the old array response
     return data.results || data;
   },
 
@@ -114,7 +113,6 @@ export const formApi = {
       headers: getHeaders(token),
     });
     const data = await handleResponse(response);
-    // Handle the case where the response is an array (default ViewSet list response)
     return Array.isArray(data) ? data[0] : data;
   },
 };

@@ -129,7 +129,6 @@ export const useLoginMutation = () => {
         username: data.username,
         isAdmin: data.is_admin,
       });
-      // Invalidate any relevant queries if needed
       queryClient.invalidateQueries({ queryKey: formKeys.lists() });
     },
   });

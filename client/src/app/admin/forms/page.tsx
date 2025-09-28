@@ -17,7 +17,6 @@ interface FormStatistics {
 const AdminFormsPage: React.FC = () => {
   const router = useRouter();
   const [view, setView] = useState<"list" | "create" | "edit">("list");
-  const [editorMode, setEditorMode] = useState<"visual" | "json">("visual");
   const [formData, setFormData] = useState<Partial<FormTemplate>>({});
   const [loading, setLoading] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -54,13 +53,11 @@ const AdminFormsPage: React.FC = () => {
       fields: [],
     });
     setView("create");
-    setEditorMode("visual");
   };
 
   const handleEditForm = (form: FormTemplate) => {
     setFormData(form);
     setView("edit");
-    setEditorMode("visual");
   };
 
   const handleViewSubmissions = (form: FormTemplate) => {
@@ -69,8 +66,8 @@ const AdminFormsPage: React.FC = () => {
 
   const handleDeleteForm = async (form: FormTemplate) => {
     try {
-      const token = localStorage.getItem("authToken");
-      await formApi.deleteForm(form.id, token || "");
+      const token = localStorage.getItem("authToken") || "";
+      await formApi.deleteForm(form.id, token);
       setRefreshKey((prev) => prev + 1);
     } catch (error) {
       console.error("Failed to delete form:", error);
@@ -95,9 +92,9 @@ const AdminFormsPage: React.FC = () => {
       };
 
       if (view === "edit" && formData.id) {
-        await formApi.updateForm(formData.id, dataToSave, token || "");
+        await formApi.updateForm(formData.id, dataToSave, token);
       } else {
-        await formApi.createForm(dataToSave, token || "");
+        await formApi.createForm(dataToSave, token);
       }
 
       setView("list");
