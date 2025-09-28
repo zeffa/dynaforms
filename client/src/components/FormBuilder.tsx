@@ -484,6 +484,98 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                       />
                     </div>
                   )}
+
+                  {/* File upload settings */}
+                  {field.widget_type === "file" && (
+                    <>
+                      <div className="col-span-2">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="checkbox"
+                            id={`${field.field_name}-multiple`}
+                            checked={field.widget_config?.multiple || false}
+                            onChange={(e) =>
+                              updateFieldConfig(
+                                index,
+                                "widget_config",
+                                "multiple",
+                                e.target.checked,
+                              )
+                            }
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                          />
+                          <label 
+                            htmlFor={`${field.field_name}-multiple`}
+                            className="text-sm font-medium text-gray-700"
+                          >
+                            Allow multiple file uploads
+                          </label>
+                        </div>
+
+                        <div className="mt-2">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Accepted file types (comma-separated, e.g., .pdf,.jpg,.png)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g., .pdf,.jpg,.png"
+                            value={field.widget_config?.accept || ""}
+                            onChange={(e) =>
+                              updateFieldConfig(
+                                index,
+                                "widget_config",
+                                "accept",
+                                e.target.value,
+                              )
+                            }
+                            className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-2">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Max file size (MB)
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="e.g., 10"
+                              value={field.validation_rules?.maxFileSize || ""}
+                              onChange={(e) =>
+                                updateFieldConfig(
+                                  index,
+                                  "validation_rules",
+                                  "maxFileSize",
+                                  e.target.value ? parseInt(e.target.value) : "",
+                                )
+                              }
+                              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Max files (if multiple)
+                            </label>
+                            <input
+                              type="number"
+                              placeholder="e.g., 5"
+                              value={field.validation_rules?.maxFiles || ""}
+                              onChange={(e) =>
+                                updateFieldConfig(
+                                  index,
+                                  "validation_rules",
+                                  "maxFiles",
+                                  e.target.value ? parseInt(e.target.value) : "",
+                                )
+                              }
+                              disabled={!field.widget_config?.multiple}
+                              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm disabled:opacity-50"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 

@@ -94,21 +94,36 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         return False  # Unknown operator
     
     def _should_validate_field(self, field, form_data):
-        """Determine if a field should be validated based on its conditional logic."""
+        """Determine if a field should be validated based on its conditional logic.
+        
+        Args:
+            field: The form field to validate
+            form_data: Dictionary of submitted form data
+            
+        Returns:
+            bool: True if the field should be validated, False otherwise
+        """
         conditional_logic = field.conditional_logic or {}
         
         if not conditional_logic or not conditional_logic.get('conditions'):
             return True
             
-        operator = conditional_logic.get('operator', 'and').lower()
+        action = conditional_logic.get('action', 'show').lower()
+        logical_operator = conditional_logic.get('logicalOperator', 'and').lower()
         conditions = conditional_logic.get('conditions', [])
         
+        """Evaluate all conditions"""
         results = [self._evaluate_condition(cond, form_data) for cond in conditions]
         
-        if operator == 'and':
-            return all(results)
-        elif operator == 'or':
-            return any(results)
+        """Determine if conditions are met based on logical operator"""
+        conditions_met = all(results) if logical_operator == 'and' else any(results)
+        
+        """Apply the action logic"""
+        if action in ['show']:
+            return conditions_met
+        if action in ['hide']:
+            return not conditions_met
+            
         return True
     
     @action(

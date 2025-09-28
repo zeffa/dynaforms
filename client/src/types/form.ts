@@ -18,6 +18,7 @@ export interface Condition {
 export interface ConditionalLogic {
   conditions: Condition[];
   action: "show" | "hide";
+  logicalOperator?: "and" | "or";
 }
 
 export interface FieldOption {

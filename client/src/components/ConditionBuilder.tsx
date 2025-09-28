@@ -1,5 +1,6 @@
 import type React from "react";
-import type { FormField } from "@/types/form";
+import { useState, useEffect } from "react";
+import type { FormField, ConditionalLogic } from "@/types/form";
 
 type WidgetType = {
   value: string;
@@ -37,6 +38,37 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
     (f) => f.field_name !== field.field_name,
   );
   const conditions = field.conditional_logic?.conditions || [];
+  const [localLogic, setLocalLogic] = useState<Omit<ConditionalLogic, 'conditions'>>({
+    action: field.conditional_logic?.action || 'show',
+    logicalOperator: field.conditional_logic?.logicalOperator || 'and',
+  });
+
+  // Update local state when field.conditional_logic changes
+  useEffect(() => {
+    if (field.conditional_logic) {
+      setLocalLogic(prev => ({
+        action: field.conditional_logic?.action || 'show',
+        logicalOperator: field.conditional_logic?.logicalOperator || 'and',
+      }));
+    }
+  }, [field.conditional_logic?.action, field.conditional_logic?.logicalOperator]);
+
+  // Only update parent when localLogic changes and values are different from current field.conditional_logic
+  useEffect(() => {
+    if (!field.conditional_logic) return;
+    
+    const hasChanges = 
+      field.conditional_logic.action !== localLogic.action || 
+      field.conditional_logic.logicalOperator !== localLogic.logicalOperator;
+    
+    if (hasChanges) {
+      onChange({
+        ...field.conditional_logic,
+        action: localLogic.action,
+        logicalOperator: localLogic.logicalOperator,
+      });
+    }
+  }, [localLogic, field.conditional_logic, onChange]);
 
   const addCondition = () => {
     const newCondition = {
@@ -44,46 +76,89 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
       operator: "equals",
       value: "",
     };
-    onChange({
-      ...field.conditional_logic,
+    
+    const updatedLogic = {
+      ...(field.conditional_logic || { action: 'show', logicalOperator: 'and' }),
       conditions: [...conditions, newCondition],
-    });
+    };
+    
+    onChange(updatedLogic);
   };
 
   const updateCondition = (index: number, updates: any) => {
     const updated = [...conditions];
     updated[index] = { ...updated[index], ...updates };
-    onChange({
-      ...field.conditional_logic,
-      conditions: updated,
-    });
+    
+    // Only update if there are actual changes
+    const currentCondition = conditions[index];
+    if (JSON.stringify(currentCondition) !== JSON.stringify(updated[index])) {
+      onChange({
+        ...field.conditional_logic,
+        action: localLogic.action,
+        logicalOperator: localLogic.logicalOperator,
+        conditions: updated,
+      });
+    }
   };
 
   const removeCondition = (index: number) => {
     const updated = conditions.filter((_, i) => i !== index);
-    onChange({
-      ...field.conditional_logic,
-      conditions: updated,
-    });
+    
+    // Only update if the number of conditions actually changes
+    if (updated.length !== conditions.length) {
+      onChange({
+        ...field.conditional_logic,
+        action: localLogic.action,
+        logicalOperator: localLogic.logicalOperator,
+        conditions: updated,
+      });
+    }
+  };
+
+  const handleActionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newAction = e.target.value as 'show' | 'hide';
+    setLocalLogic(prev => ({
+      ...prev,
+      action: newAction,
+    }));
+  };
+
+  const handleOperatorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newOperator = e.target.value as 'and' | 'or';
+    setLocalLogic(prev => ({
+      ...prev,
+      logicalOperator: newOperator,
+    }));
   };
 
   return (
     <div className="mt-4 p-4 border rounded bg-gray-50">
-      <div className="flex justify-between items-center mb-2">
-        <h4 className="text-sm font-medium text-gray-700">
-          Show this field when:
-        </h4>
-        <button
-          type="button"
-          onClick={addCondition}
-          className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-        >
-          + Add Condition
-        </button>
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center space-x-2">
+          <span className="text-sm font-medium text-gray-700">Action:</span>
+          <label htmlFor="action-select" className="sr-only">Action</label>
+          <select
+            id="action-select"
+            value={localLogic.action}
+            onChange={handleActionChange}
+            className="text-sm border rounded p-1 text-gray-700"
+          >
+            <option value="show">Show</option>
+            <option value="hide">Hide</option>
+          </select>
+          <span className="text-sm text-gray-700">this field when</span>
+          <button
+            type="button"
+            onClick={addCondition}
+            className="ml-auto text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
+          >
+            + Add Condition
+          </button>
+        </div>
       </div>
 
       {conditions.length === 0 ? (
-        <p className="text-sm text-gray-500">No conditions (always visible)</p>
+        <p className="text-sm text-gray-500">No conditions (always {localLogic.action === 'show' ? 'visible' : 'hidden'})</p>
       ) : (
         <div className="space-y-2">
           {conditions.map((condition: any, index: number) => (
@@ -162,6 +237,21 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
               </button>
             </div>
           ))}
+          
+          {conditions.length > 1 && (
+            <div className="flex items-center space-x-2 mt-2">
+              <span className="text-sm font-medium text-gray-700">Match:</span>
+              <select
+                value={localLogic.logicalOperator}
+                onChange={handleOperatorChange}
+                className="text-sm border rounded p-1 text-gray-700"
+                aria-label="Select logical operator for conditions"
+              >
+                <option value="and">All conditions (AND)</option>
+                <option value="or">Any condition (OR)</option>
+              </select>
+            </div>
+          )}
         </div>
       )}
     </div>
