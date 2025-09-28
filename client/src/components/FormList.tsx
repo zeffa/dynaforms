@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState } from "react";
-import { formApi } from "@/services/formApi";
+import { useForms } from "@/hooks/useForms";
 import type { FormTemplate } from "@/types/form";
 
 interface FormListProps {
@@ -18,48 +17,22 @@ const FormList: React.FC<FormListProps> = ({
   onEditForm,
   onDeleteForm,
 }) => {
-  const [forms, setForms] = useState<FormTemplate[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const token = localStorage.getItem("authToken") || "";
+  const { data: forms, isLoading, error } = useForms(token);
+  
+  const errorMessage = error ? "Failed to load forms." : null;
 
-  useEffect(() => {
-    const fetchForms = async () => {
-      try {
-        setLoading(true);
-        let fetchedForms;
-        if (isAdmin) {
-          const token = localStorage.getItem("authToken") || "";
-          if (!token) {
-            setError('Authentication required.');
-            return;
-          }
-          fetchedForms = await formApi.getForms(token);
-        } else {
-          fetchedForms = await formApi.getForms();
-        }
-        setForms(fetchedForms);
-      } catch (err) {
-        setError("Failed to load forms.");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchForms();
-  }, [isAdmin]);
-
-  if (loading) {
+  if (isLoading) {
     return <div className="text-center py-10">Loading forms...</div>;
   }
 
-  if (error) {
-    return <div className="text-center py-10 text-red-500">{error}</div>;
+  if (errorMessage) {
+    return <div className="text-center py-10 text-red-500">{errorMessage}</div>;
   }
 
   return (
     <div className="space-y-4">
-      {forms.map((form) => (
+      {forms?.map((form) => (
         <div
           key={form.id}
           className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center"
@@ -72,18 +45,21 @@ const FormList: React.FC<FormListProps> = ({
             {isAdmin && onEditForm && onDeleteForm ? (
               <>
                 <button
+                  type="button"
                   onClick={() => onFormSelect(form)}
                   className="px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
                 >
                   Submissions
                 </button>
                 <button
+                  type="button"
                   onClick={() => onEditForm(form)}
                   className="px-3 py-1 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700"
                 >
                   Edit
                 </button>
                 <button
+                  type="button"
                   onClick={() => onDeleteForm(form)}
                   className="px-3 py-1 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 >
@@ -92,6 +68,7 @@ const FormList: React.FC<FormListProps> = ({
               </>
             ) : (
               <button
+                type="button"
                 onClick={() => onFormSelect(form)}
                 className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
               >
