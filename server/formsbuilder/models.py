@@ -96,3 +96,11 @@ class FormFieldOption(models.Model):
 
     class Meta:
         ordering = ["order"]
+
+    def __str__(self):
+        field_label = (
+            self.form_field.label
+            if hasattr(self, "form_field") and self.form_field
+            else "No Field"
+        )
+        return f"{field_label} - {self.label}"

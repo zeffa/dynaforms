@@ -1,0 +1,15 @@
+services:
+  testapp:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile.test
+    env_file:
+      - ./server/.env.test
+    depends_on:
+      - testdb
+  testdb:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}

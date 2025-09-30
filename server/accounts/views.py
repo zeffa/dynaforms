@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from . import serializers
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
+
 
 class AuthViewSet(viewsets.GenericViewSet):
     serializer_action_classes = {
@@ -31,6 +31,5 @@ class AuthViewSet(viewsets.GenericViewSet):
         registration_data = request.data
         serializer = self.get_serializer(data=registration_data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-

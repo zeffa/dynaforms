@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
+
 from .models import FormField, FormFieldOption, FormSubmission, FormTemplate
 from .serializers import (
     FormFieldOptionSerializer,
@@ -20,8 +21,8 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         if self.action in ["submit_form", "list", "retrieve", "submissions"]:
             return [AllowAny()]
         return [IsAuthenticated()]
-        
-    @action(detail=True, methods=['get'])
+
+    @action(detail=True, methods=["get"])
     def submissions(self, request, pk=None):
         """
         Retrieve all submissions for a specific form template.
@@ -32,7 +33,7 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         if page is not None:
             serializer = FormSubmissionSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-            
+
         serializer = FormSubmissionSerializer(submissions, many=True)
         return Response(serializer.data)
 
@@ -45,119 +46,130 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         return get_object_or_404(qs, pk=lookup_value)
 
     def _evaluate_condition(self, condition, form_data):
-        """Evaluate a single condition against form data."""
-        field_name = condition.get('field')
-        operator = condition.get('operator')
-        value = condition.get('value')
-        
+        field_name = condition.get("field")
+        operator = condition.get("operator")
+        value = condition.get("value")
+
         if field_name not in form_data:
             field_value = None
             field_exists = False
         else:
             field_value = form_data[field_name]
             field_exists = True
-            
-        if operator == 'is_empty':
-            return not field_exists or field_value in (None, '')
-        elif operator == 'is_not_empty':
-            return field_exists and field_value not in (None, '')
-            
+
+        if operator == "is_empty":
+            return not field_exists or field_value in (None, "")
+        if operator == "is_not_empty":
+            return field_exists and field_value not in (None, "")
+
         if not field_exists:
             return False
-            
+
         str_field = str(field_value)
-        str_value = str(value) if value is not None else ''
-        
+        str_value = str(value) if value is not None else ""
+
         try:
             num_field = float(field_value)
             num_value = float(value) if value is not None else 0
         except (ValueError, TypeError):
             num_field = num_value = None
-        
-        if operator == 'equals':
+
+        if operator == "equals":
             return str_field == str_value
-        elif operator == 'not_equals':
+        if operator == "not_equals":
             return str_field != str_value
-        elif operator == 'contains':
+        if operator == "contains":
             return str_value in str_field
-        elif operator == 'not_contains':
+        if operator == "not_contains":
             return str_value not in str_field
-        elif operator == 'greater_than':
-            return num_field is not None and num_value is not None and num_field > num_value
-        elif operator == 'less_than':
-            return num_field is not None and num_value is not None and num_field < num_value
-        elif operator == 'greater_than_or_equals':
-            return num_field is not None and num_value is not None and num_field >= num_value
-        elif operator == 'less_than_or_equals':
-            return num_field is not None and num_value is not None and num_field <= num_value
-            
+        if operator == "greater_than":
+            return (
+                num_field is not None
+                and num_value is not None
+                and num_field > num_value
+            )
+        if operator == "less_than":
+            return (
+                num_field is not None
+                and num_value is not None
+                and num_field < num_value
+            )
+        if operator == "greater_than_or_equals":
+            return (
+                num_field is not None
+                and num_value is not None
+                and num_field >= num_value
+            )
+        if operator == "less_than_or_equals":
+            return (
+                num_field is not None
+                and num_value is not None
+                and num_field <= num_value
+            )
+
         return False  # Unknown operator
-    
+
     def _should_validate_field(self, field, form_data):
         """Determine if a field should be validated based on its conditional logic.
-        
+
         Args:
             field: The form field to validate
             form_data: Dictionary of submitted form data
-            
+
         Returns:
             bool: True if the field should be validated, False otherwise
         """
         conditional_logic = field.conditional_logic or {}
-        
-        if not conditional_logic or not conditional_logic.get('conditions'):
+
+        if not conditional_logic or not conditional_logic.get("conditions"):
             return True
-            
-        action = conditional_logic.get('action', 'show').lower()
-        logical_operator = conditional_logic.get('logicalOperator', 'and').lower()
-        conditions = conditional_logic.get('conditions', [])
-        
-        """Evaluate all conditions"""
+
+        action = conditional_logic.get("action", "show").lower()
+        logical_operator = conditional_logic.get("logicalOperator", "and").lower()
+        conditions = conditional_logic.get("conditions", [])
+
         results = [self._evaluate_condition(cond, form_data) for cond in conditions]
-        
-        """Determine if conditions are met based on logical operator"""
-        conditions_met = all(results) if logical_operator == 'and' else any(results)
-        
-        """Apply the action logic"""
-        if action in ['show']:
+        conditions_met = all(results) if logical_operator == "and" else any(results)
+
+        if action in ["show"]:
             return conditions_met
-        if action in ['hide']:
+        if action in ["hide"]:
             return not conditions_met
-            
+
         return True
-    
+
     @action(
         detail=True,
-        methods=["post"], 
+        methods=["post"],
         url_path="submit",
     )
     def submit_form(self, request, pk):
         form_template = self.get_object()
         form_data = request.data
-        
+
         for field in form_template.fields.all():
             if field.is_required and field.field_name not in form_data:
                 if self._should_validate_field(field, form_data):
                     data = {
-                        "message": "Missing required field", 
+                        "message": "Missing required field",
                         "field_name": field.field_name,
-                        "label": field.label
+                        "label": field.label,
                     }
                     return Response(data=data, status=400)
-        
+
         form_submission = FormSubmission.objects.create(
             form_template=form_template,
             submission_data=form_data,
             submitted_by=request.user if request.user.is_authenticated else None,
             ip_address=request.META.get("REMOTE_ADDR"),
         )
-        
+
         return Response(
             {
                 "message": "Form submitted successfully",
                 "submission_id": form_submission.id,
             },
-            status=201
+            status=201,
         )
 
 
@@ -180,6 +192,7 @@ class FormStatisticsViewSet(viewsets.ViewSet):
     """
     A simple ViewSet for retrieving form statistics.
     """
+
     permission_classes = [IsAuthenticated]
 
     def list(self, request):

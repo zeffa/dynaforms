@@ -1,7 +1,6 @@
 from typing import Any, Dict
 
-from django.contrib.auth import get_user_model
-from django.contrib.auth import password_validation
+from django.contrib.auth import get_user_model, password_validation
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -11,7 +10,7 @@ User = get_user_model()
 
 class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs) -> Dict[str, Any]:
-        super().validate(attrs) # Required
+        super().validate(attrs)  # Required
         return self.build_response(self.user)
 
     def build_response(self, user):

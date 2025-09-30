@@ -10,7 +10,7 @@ class FormFieldOptionSerializer(serializers.ModelSerializer):
 
 
 class FormFieldSerializer(serializers.ModelSerializer):
-    options = FormFieldOptionSerializer(many=True, read_only=True)
+    options = FormFieldOptionSerializer(many=True, required=False)
 
     class Meta:
         model = FormField
@@ -28,6 +28,25 @@ class FormFieldSerializer(serializers.ModelSerializer):
             "conditional_logic",
             "options",
         ]
+
+    def create(self, validated_data):
+        options_data = validated_data.pop("options", [])
+        field = FormField.objects.create(**validated_data)
+        for option_data in options_data:
+            FormFieldOption.objects.create(form_field=field, **option_data)
+        return field
+
+    def update(self, instance, validated_data):
+        options_data = validated_data.pop("options", None)
+
+        instance = super().update(instance, validated_data)
+
+        if options_data is not None:
+            instance.options.all().delete()
+            for option_data in options_data:
+                FormFieldOption.objects.create(form_field=instance, **option_data)
+
+        return instance
 
 
 class FormTemplateSerializer(serializers.ModelSerializer):
@@ -57,11 +76,19 @@ class FormTemplateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         fields_data = validated_data.pop("fields_data", [])
         form_template = FormTemplate.objects.create(**validated_data)
+
         for field_data in fields_data:
             options_data = field_data.pop("options", [])
-            field = FormField.objects.create(form_template=form_template, **field_data)
+
+            field_serializer = FormFieldSerializer(data=field_data)
+            field_serializer.is_valid(raise_exception=True)
+            field = field_serializer.save(form_template=form_template)
+
             for option_data in options_data:
-                FormFieldOption.objects.create(form_field=field, **option_data)
+                option_serializer = FormFieldOptionSerializer(data=option_data)
+                option_serializer.is_valid(raise_exception=True)
+                option_serializer.save(form_field=field)
+
         return form_template
 
     def update(self, instance, validated_data):
@@ -70,11 +97,19 @@ class FormTemplateSerializer(serializers.ModelSerializer):
 
         if fields_data is not None:
             instance.fields.all().delete()
+
             for field_data in fields_data:
                 options_data = field_data.pop("options", [])
-                field = FormField.objects.create(form_template=instance, **field_data)
+
+                field_serializer = FormFieldSerializer(data=field_data)
+                field_serializer.is_valid(raise_exception=True)
+                field = field_serializer.save(form_template=instance)
+
                 for option_data in options_data:
-                    FormFieldOption.objects.create(form_field=field, **option_data)
+                    option_serializer = FormFieldOptionSerializer(data=option_data)
+                    option_serializer.is_valid(raise_exception=True)
+                    option_serializer.save(form_field=field)
+
         return instance
 
 

@@ -56,6 +56,10 @@ docker-up:
 docker-down:
 	docker compose -f docker-compose.yml down
 
+.PHONY: all clean tests
+tests:
+	sh server/scripts/run_tests.sh
+
 .PHONY: dev
 dev: install \
 	migrations \
