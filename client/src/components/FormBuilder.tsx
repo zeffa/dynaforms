@@ -1,6 +1,11 @@
-import type React from "react";
+import React, { useCallback, useState } from "react";
 import type { FieldOption, FormField, FormTemplate } from "../types/form";
 import { ConditionBuilder } from "./ConditionBuilder";
+import { FormSettings } from "./form-builder-widgets/FormSettings";
+import { FieldHeader } from "./form-builder-widgets/FieldHeader";
+import { FieldBasicSettings } from "./form-builder-widgets/FieldBasicSettings";
+import { FieldAdvancedSettings } from "./form-builder-widgets/FieldAdvancedSettings";
+import { FieldOptionsEditor } from "./form-builder-widgets/FieldOptionsEditor";
 
 const WIDGET_TYPES = [
   { value: "text", label: "Text Input" },
@@ -146,85 +151,23 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Form Builder</h2>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Form Template Settings */}
-        <div className="bg-gray-50 p-6 rounded-lg space-y-4">
-          <h3 className="text-lg font-semibold text-gray-700">Form Settings</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Form Name<span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => handleTemplateChange({ name: e.target.value })}
-                className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Employee Onboarding, Loan Application"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category (Optional)
-              </label>
-              <input
-                type="text"
-                value={category}
-                onChange={(e) =>
-                  handleTemplateChange({ category: e.target.value })
-                }
-                className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., HR, Finance, Customer Service"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Use categories to organize your forms
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) =>
-                handleTemplateChange({ description: e.target.value })
-              }
-              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="Brief description of what this form is for..."
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={is_active}
-                onChange={(e) =>
-                  handleTemplateChange({ is_active: e.target.checked })
-                }
-                className="text-blue-600"
-              />
-              <span className="text-sm font-medium text-gray-700">
-                Active (visible to users)
-              </span>
-            </label>
-          </div>
-        </div>
+        <FormSettings 
+          formData={formData} 
+          onChange={handleTemplateChange} 
+        />
 
         {/* Form Fields */}
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col items-center space-y-4">
             <h3 className="text-lg font-semibold text-gray-700">Form Fields</h3>
             <button
               type="button"
               onClick={addField}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
               Add Field
             </button>
           </div>
@@ -243,108 +186,20 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               key={index}
               className="border border-gray-200 p-6 rounded-lg space-y-4 bg-white shadow-sm"
             >
-              <div className="flex justify-between items-start">
-                <h4 className="font-medium text-gray-800">Field {index + 1}</h4>
-                <div className="flex space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => moveField(index, "up")}
-                    disabled={index === 0}
-                    className="text-sm bg-gray-700 text-white px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
-                    title="Move up"
-                  >
-                    ↑
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveField(index, "down")}
-                    disabled={index === fields.length - 1}
-                    className="text-sm bg-gray-700 text-white px-2 py-1 rounded disabled:opacity-50 hover:bg-gray-200"
-                    title="Move down"
-                  >
-                    ↓
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => removeField(index)}
-                    className="text-sm bg-red-700 text-white px-2 py-1 rounded hover:bg-red-200 cursor-pointer"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
+              <FieldHeader
+                index={index}
+                totalFields={fields.length}
+                onMoveUp={() => moveField(index, "up")}
+                onMoveDown={() => moveField(index, "down")}
+                onRemove={() => removeField(index)}
+              />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Label *
-                  </label>
-                  <input
-                    type="text"
-                    value={field.label}
-                    onChange={(e) =>
-                      updateField(index, { label: e.target.value })
-                    }
-                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="What users will see"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Field Name
-                  </label>
-                  <input
-                    type="text"
-                    value={field.field_name}
-                    onChange={(e) =>
-                      updateField(index, { field_name: e.target.value })
-                    }
-                    placeholder="Auto-generated from label"
-                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                  />
-                  <p className="text-xs text-gray-500">
-                    Internal field name (optional)
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Widget Type *
-                  </label>
-                  <select
-                    value={field.widget_type}
-                    onChange={(e) =>
-                      updateField(index, { widget_type: e.target.value })
-                    }
-                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    required
-                    aria-label="Widget Type"
-                  >
-                    {WIDGET_TYPES.map((type) => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Placeholder
-                  </label>
-                  <input
-                    type="text"
-                    value={field.placeholder}
-                    onChange={(e) =>
-                      updateField(index, { placeholder: e.target.value })
-                    }
-                    className="w-full text-gray-700 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                    placeholder="Hint text for users"
-                  />
-                </div>
-              </div>
+              <FieldBasicSettings
+                field={field}
+                index={index}
+                onUpdate={(updates) => updateField(index, updates)}
+                widgetTypes={WIDGET_TYPES}
+              />
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -361,286 +216,25 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
                 />
               </div>
 
-              {/* Advanced Settings for widget_config and validation_rules */}
-              <div className="bg-gray-50 p-4 rounded-md mt-4">
-                <h5 className="font-medium text-gray-700 mb-2">
-                  Advanced Settings
-                </h5>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* minLength & maxLength for text-based inputs */}
-                  {[
-                    "text",
-                    "textarea",
-                    "email",
-                    "password",
-                    "url",
-                    "phone",
-                  ].includes(field.widget_type || "text") && (
-                    <>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Min Length
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="e.g., 5"
-                          value={field.validation_rules?.minLength || ""}
-                          onChange={(e) =>
-                            updateFieldConfig(
-                              index,
-                              "validation_rules",
-                              "minLength",
-                              e.target.value ? parseInt(e.target.value) : "",
-                            )
-                          }
-                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Max Length
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="e.g., 100"
-                          value={field.validation_rules?.maxLength || ""}
-                          onChange={(e) =>
-                            updateFieldConfig(
-                              index,
-                              "validation_rules",
-                              "maxLength",
-                              e.target.value ? parseInt(e.target.value) : "",
-                            )
-                          }
-                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                        />
-                      </div>
-                    </>
-                  )}
+              <FieldAdvancedSettings
+                field={field}
+                index={index}
+                onUpdateConfig={(
+                  configType: 'widget_config' | 'validation_rules', 
+                  key: string, 
+                  value: any
+                ) => updateFieldConfig(index, configType, key, value)}
+              />
 
-                  {/* minValue & maxValue for number inputs */}
-                  {field.widget_type === "number" && (
-                    <>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Min Value
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="e.g., 0"
-                          value={field.validation_rules?.minValue || ""}
-                          onChange={(e) =>
-                            updateFieldConfig(
-                              index,
-                              "validation_rules",
-                              "minValue",
-                              e.target.value ? parseInt(e.target.value) : "",
-                            )
-                          }
-                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">
-                          Max Value
-                        </label>
-                        <input
-                          type="number"
-                          placeholder="e.g., 100"
-                          value={field.validation_rules?.maxValue || ""}
-                          onChange={(e) =>
-                            updateFieldConfig(
-                              index,
-                              "validation_rules",
-                              "maxValue",
-                              e.target.value ? parseInt(e.target.value) : "",
-                            )
-                          }
-                          className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                        />
-                      </div>
-                    </>
-                  )}
-
-                  {/* Rows for textarea */}
-                  {field.widget_type === "textarea" && (
-                    <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
-                        Rows
-                      </label>
-                      <input
-                        type="number"
-                        placeholder="e.g., 4"
-                        value={field.widget_config?.rows || ""}
-                        onChange={(e) =>
-                          updateFieldConfig(
-                            index,
-                            "widget_config",
-                            "rows",
-                            e.target.value ? parseInt(e.target.value) : "",
-                          )
-                        }
-                        className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                      />
-                    </div>
-                  )}
-
-                  {/* File upload settings */}
-                  {field.widget_type === "file" && (
-                    <>
-                      <div className="col-span-2">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <input
-                            type="checkbox"
-                            id={`${field.field_name}-multiple`}
-                            checked={field.widget_config?.multiple || false}
-                            onChange={(e) =>
-                              updateFieldConfig(
-                                index,
-                                "widget_config",
-                                "multiple",
-                                e.target.checked,
-                              )
-                            }
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                          />
-                          <label 
-                            htmlFor={`${field.field_name}-multiple`}
-                            className="text-sm font-medium text-gray-700"
-                          >
-                            Allow multiple file uploads
-                          </label>
-                        </div>
-
-                        <div className="mt-2">
-                          <label className="block text-xs font-medium text-gray-600 mb-1">
-                            Accepted file types (comma-separated, e.g., .pdf,.jpg,.png)
-                          </label>
-                          <input
-                            type="text"
-                            placeholder="e.g., .pdf,.jpg,.png"
-                            value={field.widget_config?.accept || ""}
-                            onChange={(e) =>
-                              updateFieldConfig(
-                                index,
-                                "widget_config",
-                                "accept",
-                                e.target.value,
-                              )
-                            }
-                            className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Max file size (MB)
-                            </label>
-                            <input
-                              type="number"
-                              placeholder="e.g., 10"
-                              value={field.validation_rules?.maxFileSize || ""}
-                              onChange={(e) =>
-                                updateFieldConfig(
-                                  index,
-                                  "validation_rules",
-                                  "maxFileSize",
-                                  e.target.value ? parseInt(e.target.value) : "",
-                                )
-                              }
-                              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Max files (if multiple)
-                            </label>
-                            <input
-                              type="number"
-                              placeholder="e.g., 5"
-                              value={field.validation_rules?.maxFiles || ""}
-                              onChange={(e) =>
-                                updateFieldConfig(
-                                  index,
-                                  "validation_rules",
-                                  "maxFiles",
-                                  e.target.value ? parseInt(e.target.value) : "",
-                                )
-                              }
-                              disabled={!field.widget_config?.multiple}
-                              className="w-full text-gray-700 p-2 border border-gray-300 rounded-md text-sm disabled:opacity-50"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Options for select, radio, checkbox */}
-              {needsOptions(field.widget_type || "text") && (
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-sm font-medium text-gray-700">
-                      Options
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => addOption(index)}
-                      className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded hover:bg-green-200"
-                    >
-                      Add Option
-                    </button>
-                  </div>
-
-                  <div className="space-y-2">
-                    {field.options?.map((option, optionIndex) => (
-                      <div
-                        key={optionIndex}
-                        className="flex gap-2 items-center"
-                      >
-                        <input
-                          type="text"
-                          placeholder="Value"
-                          value={option.value}
-                          onChange={(e) =>
-                            updateOption(index, optionIndex, {
-                              value: e.target.value,
-                            })
-                          }
-                          className="flex-1 p-2 border text-gray-700 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Display Label"
-                          value={option.label}
-                          onChange={(e) =>
-                            updateOption(index, optionIndex, {
-                              label: e.target.value,
-                            })
-                          }
-                          className="flex-1 p-2 border text-gray-700 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeOption(index, optionIndex)}
-                          className="text-red-600 hover:text-red-800 px-2 py-1"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-
-                    {(!field.options || field.options.length === 0) && (
-                      <p className="text-sm text-gray-500">
-                        No options added yet.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
+              <FieldOptionsEditor
+                field={field}
+                fieldIndex={index}
+                onAddOption={() => addOption(index)}
+                onUpdateOption={(optionIndex, updates) => 
+                  updateOption(index, optionIndex, updates)
+                }
+                onRemoveOption={(optionIndex) => removeOption(index, optionIndex)}
+              />
 
               {/* Conditional Logic */}
               <div className="mt-4 border-t pt-4">
@@ -677,15 +271,30 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               </div>
             </div>
           ))}
+          
+          <div className="flex justify-center mt-6">
+            <button
+              type="button"
+              onClick={addField}
+              className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Field
+            </button>
+          </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50"
-        >
-          {loading ? "Saving..." : "Save Form"}
-        </button>
+        <div className="pt-4 border-t border-gray-200">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Save Form"}
+          </button>
+        </div>
       </form>
     </div>
   );
