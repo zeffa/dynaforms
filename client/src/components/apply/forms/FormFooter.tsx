@@ -7,7 +7,7 @@ interface FormFooterProps {
 export const FormFooter = ({ category }: FormFooterProps) => (
   <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <div className="flex">
+      <div className="flex justify-center items-center">
         <div className="flex-shrink-0">
           <svg
             className="h-5 w-5 text-blue-400"
@@ -26,12 +26,28 @@ export const FormFooter = ({ category }: FormFooterProps) => (
             <strong>Notice:</strong>
             Required fields are marked with an asterisk (*).
           </p>
-          {category && (
-            <p className="text-blue-700 mt-1">
-              This form is categorized under:{" "}
-              <span className="font-medium">{category}</span>
-            </p>
-          )}
+        </div>
+      </div>
+      <div className="bg-blue-50 py-4">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Need Help?</h2>
+          <p className="text-gray-600 mb-6">
+            If you're having trouble filling out the form, don't hesitate to reach out to our support team.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a
+              href="mailto:zeffah.elly@gmail.com"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Email Support
+            </a>
+            <a
+              href="tel:+254706567060"
+              className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              Call Support
+            </a>
+          </div>
         </div>
       </div>
     </div>

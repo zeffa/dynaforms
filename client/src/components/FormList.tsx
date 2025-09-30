@@ -3,22 +3,22 @@
 import type React from "react";
 import { useForms } from "@/hooks/useForms";
 import type { FormTemplate } from "@/types/form";
+import { getAuthToken } from "@/utils/auth";
 
 interface FormListProps {
-  onFormSelect: (form: FormTemplate) => void;
   isAdmin?: boolean;
+  onFormSelect: (form: FormTemplate) => void;
   onEditForm?: (form: FormTemplate) => void;
   onDeleteForm?: (form: FormTemplate) => void;
 }
 
 const FormList: React.FC<FormListProps> = ({
-  onFormSelect,
   isAdmin = false,
+  onFormSelect,
   onEditForm,
   onDeleteForm,
 }) => {
-  const token = localStorage.getItem("authToken") || "";
-  const { data: forms, isLoading, error } = useForms(token);
+  const { data: forms, isLoading, error } = useForms(getAuthToken() || "");
   
   const errorMessage = error ? "Failed to load forms." : null;
 

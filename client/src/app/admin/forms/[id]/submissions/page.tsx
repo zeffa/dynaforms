@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { formApi } from "@/services/formApi";
 import { Button } from "@/components/ui/Button";
+import { getAuthToken } from "@/utils/auth";
 import type { FormSubmission } from "@/types/form";
 
 export default function FormSubmissionsPage() {
@@ -21,17 +22,14 @@ export default function FormSubmissionsPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("authToken") || "";
+        const token = getAuthToken() || '';
         
-        // Fetch form details
         const form = await formApi.getForm(formId, token);
         setFormTitle(form.name);
         
-        // Fetch submissions
-        const subs = await formApi.getFormSubmissions(formId, token);
-        setSubmissions(subs);
+        const submissions = await formApi.getFormSubmissions(formId, token);
+        setSubmissions(submissions);
       } catch (err) {
-        console.error("Failed to fetch data:", err);
         setError("Failed to load form submissions. Please try again later.");
       } finally {
         setLoading(false);
