@@ -22,8 +22,15 @@ git clone git@github.com:zeffa/dynaforms.git (using SSH)
 
 cd dynamic-form-builder
 ```
+## Preferences
+I prefer to use docker to build and run the app. 
+### Why docker?
+- Docker provides a consistent environment for development and production. It also makes it easier to share the app with others.
+- Docker also makes it easier to run the app on different operating systems.
+- Docker avoids `dependency hell` where different machines have different versions of dependencies.
+- Above all, docker avoids `It's runing on my machine` shenanigans.
 
-### With Docker and make
+## With Docker and make
 Copy the .env* files from `server/sample_envs/` directory to the `server/` directory.
 Run the following command to copy the `.env*` files to the `server/` directory.
 
@@ -48,7 +55,7 @@ The server runs on port `8000` and the frontend runs on port `3000`.
 - username: `admin`
 - password: `12345678`
 
-### Without Docker
+## Without Docker
 #### Backend
 Setup postgresql database locally. 
 - Create a database named `dynaforms`
@@ -105,7 +112,7 @@ npm install
 npm run dev
 ```
 
-#### Using the app
+### Accessing the app
 - Open `http://localhost:3000` in your browser to view the app.
 - For admin access, open `http://localhost:3000/admin` or from `Admin Panel` menu item in the app.
 - Admin requires authentication so you maybe redirected to login page. 
