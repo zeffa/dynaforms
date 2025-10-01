@@ -10,15 +10,15 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        username = "zeffah"
-        email = "zeffah.elly@gmail.com"
+        username = "admin"
+        email = "admin@gmail.com"
 
         if not User.objects.filter(email=email).exists():
             user = User(
                 username=username,
                 email=email,
-                first_name="Elijah",
-                last_name="Onduso",
+                first_name="Admin",
+                last_name="User",
                 is_staff=True,
                 is_active=True,
                 is_superuser=True,

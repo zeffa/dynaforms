@@ -1,16 +1,20 @@
+from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .models import FormField, FormFieldOption, FormSubmission, FormTemplate
-from .serializers import (
+from formsbuilder.models import FormField, FormFieldOption, FormSubmission, FormTemplate
+from formsbuilder.serializers import (
     FormFieldOptionSerializer,
     FormFieldSerializer,
     FormSubmissionSerializer,
     FormTemplateSerializer,
 )
+from formsbuilder.tasks import form_submission_notification
+
+User = get_user_model()
 
 
 class FormTemplateViewSet(viewsets.ModelViewSet):
@@ -33,6 +37,9 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         if page is not None:
             serializer = FormSubmissionSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
+        emails = User.objects.filter(is_superuser=True).values_list("email", flat=True)
+
+        form_submission_notification(emails)
 
         serializer = FormSubmissionSerializer(submissions, many=True)
         return Response(serializer.data)

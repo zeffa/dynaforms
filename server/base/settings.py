@@ -22,10 +22,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "django_celery_beat",
     "drf_spectacular",
     "formsbuilder",
     "accounts",
-    # "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -93,7 +93,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ALLOWED_ORIGINS = ["http://localhost:3080", "http://127.0.0.1:3080"]
+CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -128,3 +128,10 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email Settings
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = "noreply@dyna.forms"
+
+CELERY_BROKER_URL = "amqp://guest:guest@rabbitmq:5672//"
+CELERY_RESULT_BACKEND = "rpc://"

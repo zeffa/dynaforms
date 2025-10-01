@@ -6,7 +6,7 @@ services:
     container_name: dynamic_forms_client
     image: dynamic-forms-client
     ports:
-      - "3080:3000"
+      - "3000:3000"
     volumes:
       - ./client:/app
       - /app/node_modules
@@ -25,7 +25,7 @@ services:
     image: dynamic-forms-server
     command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
     ports:
-      - "8080:8000"
+      - "8000:8000"
     env_file:
       - ./server/.env
     volumes:
