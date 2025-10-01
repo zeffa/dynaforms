@@ -143,6 +143,14 @@ make fix
 
 However, to run these commands outside docker, see the `Makefile` for the commands.
 
+## Celery
+
+- Celery is used to handle background tasks.
+- Emails are sent to all users registered as super users.
+in this version, we are not sending actual emails, I'm using console email backend since I couldn't set up atual email server.
+- To see the emails, check the terminal when the docker services are running
+[Email Notification](files/email-notification.png)
+
 ## Contact the developer
 For any queries or trouble runing this project, please contact the developer.
 
