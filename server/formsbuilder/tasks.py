@@ -5,10 +5,10 @@ from formsbuilder.notifications import send_notification
 
 @shared_task
 def form_submission_notification(emails):
-    print(emails)
+    admin_emails = [admin.email for admin in emails]
     message = "A new form has been sumitted."
     send_notification(
         subject="Form Submission",
         message=message,
-        recipients=emails,
+        recipient_list=admin_emails,
     )

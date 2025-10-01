@@ -37,9 +37,6 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
         if page is not None:
             serializer = FormSubmissionSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-        emails = User.objects.filter(is_superuser=True).values_list("email", flat=True)
-
-        form_submission_notification(emails)
 
         serializer = FormSubmissionSerializer(submissions, many=True)
         return Response(serializer.data)
@@ -171,7 +168,10 @@ class FormTemplateViewSet(viewsets.ModelViewSet):
             ip_address=request.META.get("REMOTE_ADDR"),
         )
 
-        return Response(
+        admins = User.objects.filter(is_superuser=True)
+        form_submission_notification(admins)
+
+        return Response(    
             {
                 "message": "Form submitted successfully",
                 "submission_id": form_submission.id,
