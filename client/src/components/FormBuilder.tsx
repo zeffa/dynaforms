@@ -218,13 +218,16 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
 
         {/* Form Fields */}
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col items-center space-y-4">
             <h3 className="text-lg font-semibold text-gray-700">Form Fields</h3>
             <button
               type="button"
               onClick={addField}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+              className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
               Add Field
             </button>
           </div>
@@ -677,15 +680,30 @@ const FormBuilder: React.FC<FormBuilderProps> = ({
               </div>
             </div>
           ))}
+
+          <div className="flex justify-center mt-6">
+            <button
+              type="button"
+              onClick={addField}
+              className="flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add Field
+            </button>
+          </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50"
-        >
-          {loading ? "Saving..." : "Save Form"}
-        </button>
+        <div className="pt-4 border-t border-gray-200">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-3 px-4 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 font-medium disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Save Form"}
+          </button>
+        </div>
       </form>
     </div>
   );
