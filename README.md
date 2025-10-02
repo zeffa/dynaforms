@@ -151,6 +151,10 @@ in this version, we are not sending actual emails, I'm using console email backe
 - To see the emails, check the terminal when the docker services are running
 [Email Notification](files/email-notification.png)
 
+## Video Demos
+[Form Creation](https://www.loom.com/share/dbef92a757cb4acabbf8b5f2941f4234?sid=457a797f-3b88-4f41-8e57-c0f3e0c988f2)
+[Form Filling](https://www.loom.com/share/d8b5c5a566f54f2582ca8f7edf62df3a?sid=4499f0fa-4f0f-4aa5-bd09-01c63670a699)
+
 ## Contact the developer
 For any queries or trouble runing this project, please contact the developer.
 
