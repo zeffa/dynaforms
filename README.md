@@ -23,15 +23,30 @@ git clone git@github.com:zeffa/dynaforms.git (using SSH)
 cd dynamic-form-builder
 ```
 ## Preferences
-I prefer to use docker to build and run the app. 
+- I prefer to use docker to build and run the app.
+- For design, the app supports Three (3) form creation capabilities
+    - UI Interface;
+        - This is most preferred. 
+        - Any one can use it. 
+        - No need of technical knowledge
+    - JSON Form Builder:
+        - is the second option. 
+        - This is form user with technical skills and understands json
+    - API: 
+        - You can use the api as well to submit the form. 
+        - You need to also have json undrstading
+        - Technical understanding of APIs as well
+
 ### Why docker?
-- Docker provides a consistent environment for development and production. It also makes it easier to share the app with others.
+- Docker provides a consistent environment for development and production. 
+- It also makes it easier to share the app with others.
 - Docker also makes it easier to run the app on different operating systems.
 - Docker avoids `dependency hell` where different machines have different versions of dependencies.
 - Above all, docker avoids `It's runing on my machine` shenanigans.
 
 ## With Docker and make
 Copy the .env* files from `server/sample_envs/` directory to the `server/` directory.
+
 Run the following command to copy the `.env*` files to the `server/` directory.
 
 ```sh
@@ -49,6 +64,7 @@ Run the following command to start the app:
 make dev
 ```
 The above command spins up the app (both frontend and backend) in development mode.
+
 The server runs on port `8000` and the frontend runs on port `3000`.
 
 #### Admin/Superuser credentials (created automatically when using docker)
@@ -147,14 +163,19 @@ However, to run these commands outside docker, see the `Makefile` for the comman
 
 - Celery is used to handle background tasks.
 - Emails are sent to all users registered as super users.
-in this version, we are not sending actual emails, I'm using console email backend since I couldn't set up atual email server.
+- In this version, we are not sending actual emails
+    - I'm using console email backend since I couldn't set up atual email server.
 - To see the emails, check the terminal when the docker services are running
 [Email Notification](files/email-notification.png)
 
 ## Video Demos
-[Form Creation](https://www.loom.com/share/dbef92a757cb4acabbf8b5f2941f4234?sid=457a797f-3b88-4f41-8e57-c0f3e0c988f2)
-
-[Form Filling](https://www.loom.com/share/d8b5c5a566f54f2582ca8f7edf62df3a?sid=4499f0fa-4f0f-4aa5-bd09-01c63670a699)
+- The video demos do not include all features of this app. 
+    - I just recorded only 2 main use cases, using UI interface
+        - [Form Creation](https://www.loom.com/share/dbef92a757cb4acabbf8b5f2941f4234?sid=457a797f-3b88-4f41-8e57-c0f3e0c988f2)
+        - [Form Filling](https://www.loom.com/share/d8b5c5a566f54f2582ca8f7edf62df3a?sid=4499f0fa-4f0f-4aa5-bd09-01c63670a699)
+    - To preview more features, 
+        - Setup and run the app locally.
+    - I'll also be glad to do a live demo if need be.
 
 ## Contact the developer
 For any queries or trouble runing this project, please contact the developer.
