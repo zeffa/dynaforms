@@ -43,17 +43,23 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
     logicalOperator: field.conditional_logic?.logicalOperator || 'and',
   });
 
-  // Update local state when field.conditional_logic changes
   useEffect(() => {
     if (field.conditional_logic) {
-      setLocalLogic(prev => ({
-        action: field.conditional_logic?.action || 'show',
-        logicalOperator: field.conditional_logic?.logicalOperator || 'and',
-      }));
+      const newAction = field.conditional_logic.action || 'show';
+      const newLogicalOperator = field.conditional_logic.logicalOperator || 'and';
+      
+      setLocalLogic(prev => {
+        if (prev.action === newAction && prev.logicalOperator === newLogicalOperator) {
+          return prev;
+        }
+        return {
+          action: newAction,
+          logicalOperator: newLogicalOperator,
+        };
+      });
     }
-  }, [field.conditional_logic?.action, field.conditional_logic?.logicalOperator]);
+  }, [JSON.stringify(field.conditional_logic)]);
 
-  // Only update parent when localLogic changes and values are different from current field.conditional_logic
   useEffect(() => {
     if (!field.conditional_logic) return;
     
@@ -89,7 +95,6 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
     const updated = [...conditions];
     updated[index] = { ...updated[index], ...updates };
     
-    // Only update if there are actual changes
     const currentCondition = conditions[index];
     if (JSON.stringify(currentCondition) !== JSON.stringify(updated[index])) {
       onChange({
@@ -104,7 +109,6 @@ export const ConditionBuilder: React.FC<ConditionBuilderProps> = ({
   const removeCondition = (index: number) => {
     const updated = conditions.filter((_, i) => i !== index);
     
-    // Only update if the number of conditions actually changes
     if (updated.length !== conditions.length) {
       onChange({
         ...field.conditional_logic,
