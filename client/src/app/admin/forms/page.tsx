@@ -7,6 +7,7 @@ import { formApi } from "@/services/formApi";
 import type { FormTemplate } from "@/types/form";
 import { FormEditor } from "@/components/admin/FormEditor";
 import { StatsSection } from "@/components/admin/StatsSection";
+import { useCreateForm, useDeleteForm, useUpdateForm } from "@/hooks/useForms";
 
 interface FormStatistics {
   total_forms: number;
@@ -26,6 +27,14 @@ const AdminFormsPage: React.FC = () => {
     total_submissions: 0,
   });
   const [statsLoading, setStatsLoading] = useState(true);
+  const token = typeof window !== 'undefined' ? localStorage.getItem("authToken") || "" : "";
+  
+  const { mutate: deleteForm } = useDeleteForm(token);
+  const { mutate: createForm } = useCreateForm(token);
+  const { mutate: updateForm } = useUpdateForm(
+    formData.id || 0,
+    token
+  );
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -65,20 +74,20 @@ const AdminFormsPage: React.FC = () => {
   };
 
   const handleDeleteForm = async (form: FormTemplate) => {
-    try {
-      const token = localStorage.getItem("authToken") || "";
-      await formApi.deleteForm(form.id, token);
-      setRefreshKey((prev) => prev + 1);
-    } catch (error) {
-      console.error("Failed to delete form:", error);
-      alert("Failed to delete form. Please try again.");
+    if (window.confirm(`Are you sure you want to delete "${form.name}"?`)) {
+      try {
+        await deleteForm(form.id);
+        // The query invalidation will happen in the useDeleteForm hook
+      } catch (error) {
+        console.error("Failed to delete form:", error);
+        alert(error instanceof Error ? error.message : "Failed to delete form. Please try again.");
+      }
     }
   };
 
   const handleSaveForm = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem("authToken") || "";
       const dataToSave = {
         ...formData,
         fields_data: formData.fields?.map((field, index) => ({
@@ -92,16 +101,16 @@ const AdminFormsPage: React.FC = () => {
       };
 
       if (view === "edit" && formData.id) {
-        await formApi.updateForm(formData.id, dataToSave, token);
+        await updateForm(dataToSave);
       } else {
-        await formApi.createForm(dataToSave, token);
+        await createForm(dataToSave);
       }
 
       setView("list");
-      setRefreshKey((prev) => prev + 1);
+      setFormData({}); // Reset form data
     } catch (error) {
       console.error("Failed to save form:", error);
-      alert("Failed to save form. Please try again.");
+      alert(error instanceof Error ? error.message : "Failed to save form. Please try again.");
     } finally {
       setLoading(false);
     }

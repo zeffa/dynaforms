@@ -85,8 +85,8 @@ export default function FormSubmissionsPage() {
           >
             Back to Forms
           </Button>
-          <h1 className="text-2xl font-bold mt-4">{formTitle} - Submissions</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold mt-4 mb-4 text-gray-500">{formTitle} - Submissions</h1>
+          <p className="text-gray-400">
             {submissions.length} {submissions.length === 1 ? 'submission' : 'submissions'}
           </p>
         </div>

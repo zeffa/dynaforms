@@ -29,7 +29,9 @@ export const useForms = (token?: string) => {
   return useQuery({
     queryKey: formKeys.lists(),
     queryFn: () => formApi.getForms(token),
-    // enabled: !!token
+    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 };
 
@@ -56,7 +58,10 @@ export const useCreateForm = (token?: string) => {
     mutationFn: (formData: Partial<FormTemplate>) =>
       formApi.createForm(formData, token),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: formKeys.lists() });
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: formKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: formKeys.stats() }),
+      ]);
     },
   });
 };
@@ -68,8 +73,11 @@ export const useUpdateForm = (id: number, token?: string) => {
     mutationFn: (formData: Partial<FormTemplate>) =>
       formApi.updateForm(id, formData, token),
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: formKeys.lists() });
-      queryClient.setQueryData(formKeys.detail(id), data);
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: formKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: formKeys.stats() }),
+        queryClient.setQueryData(formKeys.detail(id), data),
+      ]);
     },
   });
 };
@@ -80,8 +88,8 @@ export const useDeleteForm = (token?: string) => {
   return useMutation({
     mutationFn: (id: number) => formApi.deleteForm(id, token),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: formKeys.lists() });
-      queryClient.removeQueries({ queryKey: formKeys.detail(id) });
+      queryClient.invalidateQueries({ queryKey: formKeys.all });
+      queryClient.invalidateQueries({ queryKey: formKeys.stats() });
     },
   });
 };

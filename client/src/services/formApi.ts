@@ -18,10 +18,26 @@ const getHeaders = (token?: string): Headers => {
 
 const handleResponse = async (response: Response) => {
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.detail || "Something went wrong");
+    let errorMessage = "Something went wrong";
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.detail || errorData.message || errorMessage;
+    } catch (e) {
+      errorMessage = response.statusText || errorMessage;
+    }
+    throw new Error(errorMessage);
   }
-  return response.json();
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+  
+  return JSON.parse(text);
 };
 
 export const formApi = {
