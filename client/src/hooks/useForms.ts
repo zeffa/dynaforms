@@ -66,19 +66,24 @@ export const useCreateForm = (token?: string) => {
   });
 };
 
-export const useUpdateForm = (id: number, token?: string) => {
+export const useUpdateForm = (token?: string) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: (formData: Partial<FormTemplate>) =>
-      formApi.updateForm(id, formData, token),
-    onSuccess: (data) => {
+    mutationFn: ({ id, data }: { id: number; data: Partial<FormTemplate> }) => {
+      return formApi.updateForm(id, data, token);
+    },
+    onSuccess: (data, { id }) => {
       return Promise.all([
         queryClient.invalidateQueries({ queryKey: formKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: formKeys.stats() }),
         queryClient.setQueryData(formKeys.detail(id), data),
       ]);
     },
+    onError: (error, variables) => {
+      console.log(error)
+      console.log(variables)
+    }
   });
 };
 

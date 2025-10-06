@@ -45,7 +45,7 @@ services:
     env_file:
       - ./server/.env.postgres
     ports:
-      - "5432:5432"
+      - "5423:5432"
     volumes:
       - dynamicformsdb:/var/lib/postgresql/data
     networks:

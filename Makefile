@@ -64,6 +64,7 @@ tests:
 dev: install \
 	migrations \
 	migrate \
+	superuser \
 	docker-up
 
 .PHONY: stop

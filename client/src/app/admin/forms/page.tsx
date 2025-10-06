@@ -31,10 +31,7 @@ const AdminFormsPage: React.FC = () => {
   
   const { mutate: deleteForm } = useDeleteForm(token);
   const { mutate: createForm } = useCreateForm(token);
-  const { mutate: updateForm } = useUpdateForm(
-    formData.id || 0,
-    token
-  );
+  const { mutate: updateForm } = useUpdateForm(token);
 
   useEffect(() => {
     const fetchStatistics = async () => {
@@ -88,9 +85,9 @@ const AdminFormsPage: React.FC = () => {
   const handleSaveForm = async () => {
     try {
       setLoading(true);
-      const dataToSave = {
+      const dataToSave: Partial<FormTemplate> = {
         ...formData,
-        fields_data: formData.fields?.map((field, index) => ({
+        fields: formData.fields?.map((field, index) => ({
           ...field,
           order: index,
           field_name:
@@ -101,13 +98,12 @@ const AdminFormsPage: React.FC = () => {
       };
 
       if (view === "edit" && formData.id) {
-        await updateForm(dataToSave);
+        await updateForm({ id: formData.id, data: dataToSave });
       } else {
         await createForm(dataToSave);
       }
 
       setView("list");
-      setFormData({}); // Reset form data
     } catch (error) {
       console.error("Failed to save form:", error);
       alert(error instanceof Error ? error.message : "Failed to save form. Please try again.");
